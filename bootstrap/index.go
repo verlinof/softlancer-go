@@ -2,7 +2,7 @@ package bootstrap
 
 import (
 	"github.com/gin-gonic/gin"
-	app_config "github.com/verlinof/restful-api-golang/config"
+	"github.com/verlinof/restful-api-golang/config/app_config"
 	"github.com/verlinof/restful-api-golang/routes"
 )
 
