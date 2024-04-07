@@ -1,27 +1,7 @@
 package main
 
-import (
-	"github.com/gin-gonic/gin"
-)
+import "github.com/verlinof/restful-api-golang/bootstrap"
 
 func main() {
-	app := gin.Default()
-
-	route := app
-	route.GET("/", func(c *gin.Context) {
-		isValidated := false
-
-		if(!isValidated) {
-			c.JSON(200, gin.H{
-				"message": "Bad Request, some field not valid",
-			})
-			return
-		}
-		c.JSON(200, gin.H{
-			"message": "Hello World!",
-		})
-		return
-	})
-
-	route.Run(":8000")
+	bootstrap.Bootstrap()
 }
