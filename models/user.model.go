@@ -1,9 +1,15 @@
 package models
 
+import (
+	"time"
+)
+
 type User struct {
-	Id       int    `gorm:"primaryKey"`
-	Name     string `gorm:"not null"`
-	Address  string `gorm:"not null"`
-	Email    string `gorm:"not null"`
-	Password string `gorm:"not null"`
+	// gorm.Model
+	Id        int     `json:"id" gorm:"primaryKey"`
+	Name      string  `json:"name" gorm:"not null"`
+	Address   string  `json:"address" gorm:"not null"`
+	Email     string  `json:"email" gorm:"not null"`
+	Password  string  `json:"password" gorm:"not null"`
+	Born_date time.Time `json:"born_date"`
 }
