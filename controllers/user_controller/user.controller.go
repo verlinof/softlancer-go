@@ -26,3 +26,22 @@ func Index(c *gin.Context) {
 		"data" : users,
 	})
 }
+
+func Show(c *gin.Context) {
+	//Get ID
+	id := c.Param("id")
+	
+	err := database.DB.First(&models.User{}, id).Error
+
+	if(err != nil) {
+		c.AbortWithStatusJSON(500, gin.H{
+			"message": "Internal server error",
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"message": "Success",
+		"data" : models.User{},
+	})
+}
