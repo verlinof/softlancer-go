@@ -7,7 +7,7 @@ var DB_HOST = "localhost"
 var DB_PORT = "3306"
 var DB_USER = "root"
 var DB_PASSWORD = ""
-var DB_NAME = "golang_restful"
+var DB_NAME = "go_restful"
 
 func InitDatabaseConfig() {
 	driverEnv := os.Getenv("DB_DRIVER")

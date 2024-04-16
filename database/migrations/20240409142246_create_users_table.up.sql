@@ -8,7 +8,7 @@ CREATE TABLE users (
 )
 
 -- Command to run migrations
--- migrate -path database/migrations -database "mysql://root:@tcp(localhost:3306)/golang_restful" up
+-- migrate -path database/migrations -database "mysql://root:@tcp(localhost:3306)/go_restful" up
 
 -- How to add Migrations
 -- migrate create -ext sql -dir database/migrations create_name_table
