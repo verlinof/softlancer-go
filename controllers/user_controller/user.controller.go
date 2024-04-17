@@ -71,6 +71,16 @@ func Store(c *gin.Context) {
 		return
 	} 
 
+	userEmailExist := new(models.User)
+	database.DB.Table("users").Where("email = ?", userReq.Email).First(&userEmailExist)
+
+	if(userEmailExist.Id != nil) {
+		c.JSON(400, gin.H{
+			"message": "Email already exist",
+		})
+		return
+	}
+
 	user := models.User{
 		Name: &userReq.Name,
 		Address: &userReq.Address,
@@ -82,7 +92,7 @@ func Store(c *gin.Context) {
 	err := database.DB.Create(&user).Error
 
 	if(err != nil) {
-		c.AbortWithStatusJSON(500, gin.H{
+		c.JSON(500, gin.H{
 			"message": err.Error(),
 		})
 		return
@@ -91,5 +101,72 @@ func Store(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "Success",
 		"data" : user,
+	})
+}
+
+func Update(c *gin.Context) {
+	id := c.Param("id")
+	user := new(models.User)
+	userReq := new(requests.UserRequest)
+
+	//If error with the Request Body
+	if errReq := c.ShouldBind(&userReq); errReq != nil {
+		c.JSON(400, gin.H{
+			"message": errReq.Error(),
+		})
+		return
+	}
+
+	//Find User
+	errDb := database.DB.Table("users").Where("id = ?", id).First(&user).Error
+	if(errDb != nil) {
+		c.JSON(500, gin.H{
+			"message": errDb.Error(),
+		})
+		return
+	}
+
+	//Update User
+	errUpdate := database.DB.Model(&user).Updates(&userReq).Error
+	if(errUpdate != nil) {
+		c.JSON(500, gin.H{
+			"message": "Failed to update user",
+			"error" : errUpdate.Error(),
+		})
+		return
+	}
+
+	//Success
+	c.JSON(200, gin.H{
+		"message": "Success",
+		"data" : user,
+	})
+}
+
+func Delete(c *gin.Context) {
+	id := c.Param("id")
+	user := new(models.User)
+
+	//Find User
+	database.DB.Table("users").Where("id = ?", id).First(&user)
+	errDb := database.DB.Table("users").Where("id = ?", id).Delete(&user).Error
+	if(errDb != nil) {
+		c.JSON(500, gin.H{
+			"message": errDb.Error(),
+		})
+		return
+	}
+
+	response :=  responses.UserResponse{
+		Id: user.Id,
+		Name: user.Name,
+		Address: user.Address,
+		Email: user.Email,
+	}
+
+	//Success
+	c.JSON(200, gin.H{
+		"message": "Success",
+		"data" : response,
 	})
 }

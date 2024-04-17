@@ -11,4 +11,6 @@ func InitRoute(app *gin.Engine) {
 	route.GET("/users", user_controller.Index)
 	route.GET("/users/:id", user_controller.Show)
 	route.POST("/users", user_controller.Store)
+	route.PUT("/users/:id", user_controller.Update)
+	route.DELETE("/users/:id", user_controller.Delete)
 }
