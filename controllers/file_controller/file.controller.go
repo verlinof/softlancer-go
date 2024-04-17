@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/verlinof/restful-api-golang/utils"
 )
 
 func HandleUploadFile(c *gin.Context) {
@@ -18,14 +19,13 @@ func HandleUploadFile(c *gin.Context) {
 		return
 	}
 
-	// //Akan mengembalikan multipart-file
-	// file, errFile := fileHeader.Open()
-	// if(errFile != nil) {
-	// 	c.JSON(500, gin.H{
-	// 		"message": "Internal server error",
-	// 	})
-	// 	return
-	// }
+	//Validation for file type
+	if(!utils.FileValidation(fileHeader, []string{"image/png", "image/jpeg"})) {
+		c.JSON(500, gin.H{
+			"message": "File type is not allowed",
+		})
+		return
+	}
 
 	//Akan mengembalikan path file
 	extensionFile := filepath.Ext(fileHeader.Filename)
