@@ -1,6 +1,8 @@
 package user_controller
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/verlinof/restful-api-golang/database"
 	"github.com/verlinof/restful-api-golang/models"
@@ -168,5 +170,40 @@ func Delete(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "Success",
 		"data" : response,
+	})
+}
+
+func IndexPaginate(c *gin.Context) {
+	page := c.Query("page")
+	if(page == "" ){
+		page = "1"
+	}
+	perPage := c.Query("per_page")
+	if(perPage == "" ){
+		perPage = "10"
+	}
+	users := new([]models.User) //Buat array
+
+	perPageInt, _ := strconv.Atoi(perPage)
+	pageInt, _ := strconv.Atoi(page)
+	if(pageInt < 1) {
+		pageInt = 1
+	}
+
+	//Get all users
+	err := database.DB.Table("users").Offset((pageInt - 1) * perPageInt).Limit(perPageInt).Find(&users).Error
+
+	if(err != nil) {
+		c.AbortWithStatusJSON(500, gin.H{
+			"message": "Internal server error",
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"message": "Success",
+		"data" : users,
+		"page": pageInt,
+		"per_page": perPageInt,
 	})
 }
