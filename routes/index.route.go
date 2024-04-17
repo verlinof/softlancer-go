@@ -14,14 +14,16 @@ func InitRoute(app *gin.Engine) {
 	route.Static(app_config.STATIC_PATH, app_config.STATIC_DIR)
 
 	//Route User
-	route.GET("/users", user_controller.Index)
-	route.GET("/users/paginate", user_controller.IndexPaginate)
-	route.GET("/users/:id", user_controller.Show)
-	route.POST("/users", user_controller.Store)
-	route.PUT("/users/:id", user_controller.Update)
-	route.DELETE("/users/:id", user_controller.Delete)
+	userRoute := route.Group("/users") //Untuk grouping Route atau bisa disebut Prefix
+	userRoute.GET("/", user_controller.Index)
+	userRoute.GET("/paginate", user_controller.IndexPaginate)
+	userRoute.GET("/:id", user_controller.Show)
+	userRoute.POST("", user_controller.Store)
+	userRoute.PUT("/:id", user_controller.Update)
+	userRoute.DELETE("/:id", user_controller.Delete)
 
 	//Route File
-	route.POST("/file", file_controller.HandleUploadFile)
-	route.DELETE("/file/:filename", file_controller.HandleRemoveFile)
+	fileRoute := route.Group("/file")
+	fileRoute.POST("/", file_controller.HandleUploadFile)
+	fileRoute.DELETE("/:filename", file_controller.HandleRemoveFile)
 }
