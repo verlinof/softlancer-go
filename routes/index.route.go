@@ -5,6 +5,7 @@ import (
 	"github.com/verlinof/restful-api-golang/config/app_config"
 	"github.com/verlinof/restful-api-golang/controllers/file_controller"
 	"github.com/verlinof/restful-api-golang/controllers/user_controller"
+	"github.com/verlinof/restful-api-golang/middleware"
 )
 
 func InitRoute(app *gin.Engine) {
@@ -23,7 +24,7 @@ func InitRoute(app *gin.Engine) {
 	userRoute.DELETE("/:id", user_controller.Delete)
 
 	//Route File
-	fileRoute := route.Group("/file")
+	fileRoute := route.Group("/file", middleware.AuthMiddleware) //Kalau nambahin Middleware
 	fileRoute.POST("/", file_controller.HandleUploadFile)
 	fileRoute.DELETE("/:filename", file_controller.HandleRemoveFile)
 }
