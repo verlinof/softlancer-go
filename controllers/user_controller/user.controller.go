@@ -4,10 +4,10 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/verlinof/restful-api-golang/database"
-	"github.com/verlinof/restful-api-golang/models"
-	"github.com/verlinof/restful-api-golang/requests"
-	"github.com/verlinof/restful-api-golang/responses"
+	"github.com/verlinof/softlancer-go/database"
+	"github.com/verlinof/softlancer-go/models"
+	"github.com/verlinof/softlancer-go/requests"
+	"github.com/verlinof/softlancer-go/responses"
 )
 
 func Index(c *gin.Context) {

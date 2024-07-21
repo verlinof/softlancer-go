@@ -5,10 +5,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/verlinof/restful-api-golang/config/app_config"
-	"github.com/verlinof/restful-api-golang/config/db_config"
-	"github.com/verlinof/restful-api-golang/database"
-	"github.com/verlinof/restful-api-golang/routes"
+	"github.com/verlinof/softlancer-go/config/app_config"
+	"github.com/verlinof/softlancer-go/config/db_config"
+	"github.com/verlinof/softlancer-go/database"
+	"github.com/verlinof/softlancer-go/routes"
 )
 
 //Function capital agar dapat diakses diluar package
@@ -25,6 +25,7 @@ func Bootstrap() {
 
 	//Load database
 	database.ConnectDatabase()
+	
 	//Init GIN ENGINE
 	app := gin.Default()
 

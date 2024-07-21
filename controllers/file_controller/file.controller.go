@@ -7,8 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/verlinof/restful-api-golang/config/app_config"
-	"github.com/verlinof/restful-api-golang/utils"
+	"github.com/verlinof/softlancer-go/config/app_config"
+	"github.com/verlinof/softlancer-go/utils"
 )
 
 func HandleUploadFile(c *gin.Context) {

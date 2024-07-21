@@ -1,6 +1,6 @@
 package main
 
-import "github.com/verlinof/restful-api-golang/bootstrap"
+import "github.com/verlinof/softlancer-go/bootstrap"
 
 func main() {
 	bootstrap.Bootstrap()

@@ -2,10 +2,10 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/verlinof/restful-api-golang/config/app_config"
-	"github.com/verlinof/restful-api-golang/controllers/file_controller"
-	"github.com/verlinof/restful-api-golang/controllers/user_controller"
-	"github.com/verlinof/restful-api-golang/middleware"
+	"github.com/verlinof/softlancer-go/config/app_config"
+	"github.com/verlinof/softlancer-go/controllers/file_controller"
+	"github.com/verlinof/softlancer-go/controllers/user_controller"
+	"github.com/verlinof/softlancer-go/middleware"
 )
 
 func InitRoute(app *gin.Engine) {
