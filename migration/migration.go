@@ -26,5 +26,10 @@ func init() {
 
 func main() {
 	// Migrate the schema
-	database.DB.AutoMigrate(&models.User{})
+	err := database.DB.AutoMigrate(&models.User{}, &models.Company{}, &models.Project{}, &models.Role{})
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Println("Migration complete!")
 }
