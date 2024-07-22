@@ -19,14 +19,14 @@ func init() {
 	// Init config
 	app_config.InitAppConfig()
 	db_config.InitDatabaseConfig()
-	
+
 	// Database connection
 	database.ConnectDatabase()
 }
 
 func main() {
 	// Drop the tables if they exist
-	err := database.DB.Migrator().DropTable(&models.User{}, &models.Company{}, &models.Project{}, &models.Role{}, &models.Reference{})
+	err := database.DB.Migrator().DropTable(&models.User{}, &models.Company{}, &models.Project{}, &models.Role{}, &models.Reference{}, &models.Application{})
 	if err != nil {
 		log.Println("Error dropping tables: ", err)
 	} else {
@@ -34,7 +34,7 @@ func main() {
 	}
 
 	// Migrate the schema
-	err = database.DB.AutoMigrate(&models.User{}, &models.Company{}, &models.Project{}, &models.Role{}, &models.Reference{})
+	err = database.DB.AutoMigrate(&models.User{}, &models.Company{}, &models.Project{}, &models.Role{}, &models.Reference{}, &models.Application{})
 	if err != nil {
 		log.Println("Error migrating schema: ", err)
 	} else {
