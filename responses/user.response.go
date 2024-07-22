@@ -7,3 +7,9 @@ type UserResponse struct {
 	Address *string `json:"address" gorm:"not null"`
 	Email   *string `json:"email" gorm:"not null"`
 }
+
+type LoginResponse struct {
+	Status  string      `json:"id"`
+	Message string      `json:"message"`
+	Token   interface{} `json:"token"` // Data can be of any type
+}

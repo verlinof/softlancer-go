@@ -1,18 +1,24 @@
 package user_controller
 
 import (
+	"net/http"
+	"os"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/verlinof/softlancer-go/database"
 	"github.com/verlinof/softlancer-go/models"
 	"github.com/verlinof/softlancer-go/requests"
 	"github.com/verlinof/softlancer-go/responses"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Register(c *gin.Context) {
 	userReq := new(requests.UserRequest)
 
+	//Input validation
 	if errReq := c.ShouldBind(&userReq); errReq != nil { //ini auto buat bind ataupun postform
 		errorResponse := responses.ErrorResponse{
 			Status:     "error",
@@ -20,7 +26,7 @@ func Register(c *gin.Context) {
 			Error:      errReq.Error(),
 		}
 
-		c.JSON(400, errorResponse)
+		c.JSON(http.StatusBadRequest, errorResponse)
 		return
 	}
 
@@ -35,51 +41,128 @@ func Register(c *gin.Context) {
 			Error:      "Email already exist",
 		}
 
-		c.JSON(400, errorResponse)
+		c.JSON(http.StatusBadRequest, errorResponse)
 		return
 	}
+
+	// Encrypt the password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userReq.Password), bcrypt.DefaultCost)
+	if err != nil {
+		errorResponse := responses.ErrorResponse{
+			Status:     "error",
+			StatusCode: 500,
+			Error:      err.Error(),
+		}
+		c.JSON(http.StatusInternalServerError, errorResponse)
+		return
+	}
+
+	hashedPasswordStr := string(hashedPassword)
 
 	//Create User
 	user := models.User{
 		Name:     &userReq.Name,
 		Address:  &userReq.Address,
 		Email:    &userReq.Email,
-		Password: &userReq.Password,
+		Password: &hashedPasswordStr,
 	}
 
-	err := database.DB.Create(&user).Error
+	err = database.DB.Create(&user).Error
 
 	if err != nil {
-		c.JSON(500, gin.H{
-			"message": err.Error(),
-		})
+		errorResponse := responses.ErrorResponse{
+			Status:     "error",
+			StatusCode: 500,
+			Error:      err.Error(),
+		}
+		c.JSON(http.StatusInternalServerError, errorResponse)
 		return
 	}
 
-	c.JSON(200, gin.H{
-		"message": "Success",
-		"data":    user,
-	})
+	userResponse := responses.UserResponse{
+		Id:      user.Id,
+		Name:    user.Name,
+		Address: user.Address,
+		Email:   user.Email,
+	}
+	successResponse := responses.SuccessResponse{
+		Status:  "success",
+		Message: "Success",
+		Data:    userResponse,
+	}
+
+	c.JSON(http.StatusOK, successResponse)
 }
 
-func Index(c *gin.Context) {
-	users := new([]models.User) //Buat array
+func Login(c *gin.Context) {
+	var userReq requests.LoginRequest
+	var user models.User
+	var errResponse responses.ErrorResponse
+	// Get the email and pass from req body
+	if err := (c.ShouldBind(&userReq)); err != nil {
+		errResponse = responses.ErrorResponse{
+			Status:     "error",
+			StatusCode: 400,
+			Error:      err.Error(),
+		}
 
-	//Get all users
-	// Cara buat spesifik table
-	err := database.DB.Table("users").Find(&users)
-
-	if err.Error != nil {
-		c.AbortWithStatusJSON(500, gin.H{
-			"message": "Internal server error",
-		})
+		c.AbortWithStatusJSON(http.StatusBadRequest, errResponse)
 		return
 	}
 
-	c.JSON(200, gin.H{
-		"message": "Success",
-		"data":    users,
+	// Find requested User
+	database.DB.Table("users").Where("email = ?", userReq.Email).First(&user)
+	if *user.Id == 0 {
+		errResponse = responses.ErrorResponse{
+			Status:     "error",
+			StatusCode: 400,
+			Error:      "Invalid Credentials",
+		}
+
+		c.AbortWithStatusJSON(http.StatusBadRequest, errResponse)
+		return
+	}
+
+	// Compare the password
+	err := bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(userReq.Password))
+
+	if err != nil {
+		errResponse = responses.ErrorResponse{
+			Status:     "error",
+			StatusCode: 400,
+			Error:      "Invalid Credential",
+		}
+
+		c.AbortWithStatusJSON(http.StatusBadRequest, errResponse)
+		return
+	}
+
+	// Create JWT token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": user.ID,                                   //Subject is User ID
+		"exp": time.Now().Add(time.Hour * 24 * 7).Unix(), //Token will expire in 7 days
 	})
+
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET_KEY")))
+
+	if err != nil {
+		errResponse = responses.ErrorResponse{
+			Status:     "error",
+			StatusCode: 500,
+			Error:      "Failed to create token",
+		}
+
+		c.AbortWithStatusJSON(http.StatusInternalServerError, errResponse)
+		return
+	}
+
+	successResponse := responses.LoginResponse{
+		Status:  "success",
+		Message: "Success",
+		Token:   tokenString,
+	}
+
+	c.JSON(http.StatusOK, successResponse)
 }
 
 func Show(c *gin.Context) {
@@ -113,47 +196,6 @@ func Show(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "Success",
 		"data":    response,
-	})
-}
-
-func Store(c *gin.Context) {
-	userReq := new(requests.UserRequest)
-	if errReq := c.ShouldBind(&userReq); errReq != nil { //ini auto buat bind ataupun postform
-		c.JSON(400, gin.H{
-			"message": errReq.Error(),
-		})
-		return
-	}
-
-	userEmailExist := new(models.User)
-	database.DB.Table("users").Where("email = ?", userReq.Email).First(&userEmailExist)
-
-	if userEmailExist.Id != nil {
-		c.JSON(400, gin.H{
-			"message": "Email already exist",
-		})
-		return
-	}
-
-	user := models.User{
-		Name:     &userReq.Name,
-		Address:  &userReq.Address,
-		Email:    &userReq.Email,
-		Password: &userReq.Password,
-	}
-
-	err := database.DB.Create(&user).Error
-
-	if err != nil {
-		c.JSON(500, gin.H{
-			"message": err.Error(),
-		})
-		return
-	}
-
-	c.JSON(200, gin.H{
-		"message": "Success",
-		"data":    user,
 	})
 }
 

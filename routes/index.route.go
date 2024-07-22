@@ -17,6 +17,7 @@ func InitRoute(app *gin.Engine) {
 
 	//Auth Routes
 	authRoute := api.Group("/auth")
+	authRoute.POST("/login", user_controller.Login)
 	authRoute.POST("/register", user_controller.Register)
 
 	// User routes

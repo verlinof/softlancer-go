@@ -1,5 +1,11 @@
 package responses
 
+type SuccessResponse struct {
+	Status  string      `json:"id"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"` // Data can be of any type
+}
+
 type ErrorResponse struct {
 	//* atau pointer digunakan agar nanti nilainya dapat berupa "nil"
 	Status     string `json:"id"`
