@@ -11,25 +11,33 @@ import (
 )
 
 func init() {
-	err :=  godotenv.Load()
-	if(err != nil) {
-		log.Println(err)
-	}
-
-	//init config
-	app_config.InitAppConfig()
-	db_config.InitDatabaseConfig()
-	
-	//Database Migration
-	database.ConnectDatabase()
-}
-
-func main() {
-	// Migrate the schema
-	err := database.DB.AutoMigrate(&models.User{}, &models.Company{}, &models.Project{}, &models.Role{})
+	err := godotenv.Load()
 	if err != nil {
 		log.Println(err)
 	}
 
-	log.Println("Migration complete!")
+	// Init config
+	app_config.InitAppConfig()
+	db_config.InitDatabaseConfig()
+	
+	// Database connection
+	database.ConnectDatabase()
+}
+
+func main() {
+	// Drop the tables if they exist
+	err := database.DB.Migrator().DropTable(&models.User{}, &models.Company{}, &models.Project{}, &models.Role{}, &models.Reference{})
+	if err != nil {
+		log.Println("Error dropping tables: ", err)
+	} else {
+		log.Println("Tables dropped successfully.")
+	}
+
+	// Migrate the schema
+	err = database.DB.AutoMigrate(&models.User{}, &models.Company{}, &models.Project{}, &models.Role{}, &models.Reference{})
+	if err != nil {
+		log.Println("Error migrating schema: ", err)
+	} else {
+		log.Println("Migration complete!")
+	}
 }
