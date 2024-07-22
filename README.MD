@@ -12,7 +12,7 @@ go run migration/migration.go
 2. Run the Application
 
 ```
-CompileDaemon -command="./restful-api-golang"
+CompileDaemon -command="./softlancer-go"
 ```
 
 Or
