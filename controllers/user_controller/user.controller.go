@@ -10,6 +10,58 @@ import (
 	"github.com/verlinof/softlancer-go/responses"
 )
 
+func Register(c *gin.Context) {
+	userReq := new(requests.UserRequest)
+
+	if errReq := c.ShouldBind(&userReq); errReq != nil { //ini auto buat bind ataupun postform
+		errorResponse := responses.ErrorResponse{
+			Status:     "error",
+			StatusCode: 400,
+			Error:      errReq.Error(),
+		}
+
+		c.JSON(400, errorResponse)
+		return
+	}
+
+	//Check if the email already exist
+	userEmailExist := new(models.User)
+	database.DB.Table("users").Where("email = ?", userReq.Email).First(&userEmailExist)
+
+	if userEmailExist.Id != nil {
+		errorResponse := responses.ErrorResponse{
+			Status:     "error",
+			StatusCode: 400,
+			Error:      "Email already exist",
+		}
+
+		c.JSON(400, errorResponse)
+		return
+	}
+
+	//Create User
+	user := models.User{
+		Name:     &userReq.Name,
+		Address:  &userReq.Address,
+		Email:    &userReq.Email,
+		Password: &userReq.Password,
+	}
+
+	err := database.DB.Create(&user).Error
+
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"message": "Success",
+		"data":    user,
+	})
+}
+
 func Index(c *gin.Context) {
 	users := new([]models.User) //Buat array
 
@@ -17,7 +69,7 @@ func Index(c *gin.Context) {
 	// Cara buat spesifik table
 	err := database.DB.Table("users").Find(&users)
 
-	if(err.Error != nil) {
+	if err.Error != nil {
 		c.AbortWithStatusJSON(500, gin.H{
 			"message": "Internal server error",
 		})
@@ -26,7 +78,7 @@ func Index(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"message": "Success",
-		"data" : users,
+		"data":    users,
 	})
 }
 
@@ -37,14 +89,14 @@ func Show(c *gin.Context) {
 	err := database.DB.First(&user, id)
 
 	//Error handling
-	if(user.Id == nil) {
+	if user.Id == nil {
 		c.AbortWithStatusJSON(404, gin.H{
 			"message": "User not found",
 		})
 		return
 	}
 
-	if(err.Error != nil) {
+	if err.Error != nil {
 		c.AbortWithStatusJSON(500, gin.H{
 			"message": "Internal server error",
 		})
@@ -52,15 +104,15 @@ func Show(c *gin.Context) {
 	}
 
 	response := responses.UserResponse{
-		Id: user.Id,
-		Name: user.Name,
+		Id:      user.Id,
+		Name:    user.Name,
 		Address: user.Address,
-		Email: user.Email,
+		Email:   user.Email,
 	}
 
 	c.JSON(200, gin.H{
 		"message": "Success",
-		"data" : response,
+		"data":    response,
 	})
 }
 
@@ -71,12 +123,12 @@ func Store(c *gin.Context) {
 			"message": errReq.Error(),
 		})
 		return
-	} 
+	}
 
 	userEmailExist := new(models.User)
 	database.DB.Table("users").Where("email = ?", userReq.Email).First(&userEmailExist)
 
-	if(userEmailExist.Id != nil) {
+	if userEmailExist.Id != nil {
 		c.JSON(400, gin.H{
 			"message": "Email already exist",
 		})
@@ -84,16 +136,15 @@ func Store(c *gin.Context) {
 	}
 
 	user := models.User{
-		Name: &userReq.Name,
-		Address: &userReq.Address,
-		Email: &userReq.Email,
+		Name:     &userReq.Name,
+		Address:  &userReq.Address,
+		Email:    &userReq.Email,
 		Password: &userReq.Password,
-		Born_date: &userReq.Born_date,
 	}
 
 	err := database.DB.Create(&user).Error
 
-	if(err != nil) {
+	if err != nil {
 		c.JSON(500, gin.H{
 			"message": err.Error(),
 		})
@@ -102,7 +153,7 @@ func Store(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"message": "Success",
-		"data" : user,
+		"data":    user,
 	})
 }
 
@@ -121,7 +172,7 @@ func Update(c *gin.Context) {
 
 	//Find User
 	errDb := database.DB.Table("users").Where("id = ?", id).First(&user).Error
-	if(errDb != nil) {
+	if errDb != nil {
 		c.JSON(500, gin.H{
 			"message": errDb.Error(),
 		})
@@ -130,10 +181,10 @@ func Update(c *gin.Context) {
 
 	//Update User
 	errUpdate := database.DB.Model(&user).Updates(&userReq).Error
-	if(errUpdate != nil) {
+	if errUpdate != nil {
 		c.JSON(500, gin.H{
 			"message": "Failed to update user",
-			"error" : errUpdate.Error(),
+			"error":   errUpdate.Error(),
 		})
 		return
 	}
@@ -141,7 +192,7 @@ func Update(c *gin.Context) {
 	//Success
 	c.JSON(200, gin.H{
 		"message": "Success",
-		"data" : user,
+		"data":    user,
 	})
 }
 
@@ -152,48 +203,48 @@ func Delete(c *gin.Context) {
 	//Find User
 	database.DB.Table("users").Where("id = ?", id).First(&user)
 	errDb := database.DB.Table("users").Where("id = ?", id).Delete(&user).Error
-	if(errDb != nil) {
+	if errDb != nil {
 		c.JSON(500, gin.H{
 			"message": errDb.Error(),
 		})
 		return
 	}
 
-	response :=  responses.UserResponse{
-		Id: user.Id,
-		Name: user.Name,
+	response := responses.UserResponse{
+		Id:      user.Id,
+		Name:    user.Name,
 		Address: user.Address,
-		Email: user.Email,
+		Email:   user.Email,
 	}
 
 	//Success
 	c.JSON(200, gin.H{
 		"message": "Success",
-		"data" : response,
+		"data":    response,
 	})
 }
 
 func IndexPaginate(c *gin.Context) {
 	page := c.Query("page")
-	if(page == "" ){
+	if page == "" {
 		page = "1"
 	}
 	perPage := c.Query("per_page")
-	if(perPage == "" ){
+	if perPage == "" {
 		perPage = "10"
 	}
 	users := new([]models.User) //Buat array
 
 	perPageInt, _ := strconv.Atoi(perPage)
 	pageInt, _ := strconv.Atoi(page)
-	if(pageInt < 1) {
+	if pageInt < 1 {
 		pageInt = 1
 	}
 
 	//Get all users
 	err := database.DB.Table("users").Offset((pageInt - 1) * perPageInt).Limit(perPageInt).Find(&users).Error
 
-	if(err != nil) {
+	if err != nil {
 		c.AbortWithStatusJSON(500, gin.H{
 			"message": "Internal server error",
 		})
@@ -201,9 +252,9 @@ func IndexPaginate(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"message": "Success",
-		"data" : users,
-		"page": pageInt,
+		"message":  "Success",
+		"data":     users,
+		"page":     pageInt,
 		"per_page": perPageInt,
 	})
 }

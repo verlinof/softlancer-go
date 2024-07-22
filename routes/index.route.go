@@ -9,22 +9,22 @@ import (
 )
 
 func InitRoute(app *gin.Engine) {
-	route := app
-	
 	// Static Asset
-	route.Static(app_config.STATIC_PATH, app_config.STATIC_DIR)
+	app.Static(app_config.STATIC_PATH, app_config.STATIC_DIR)
 
-	//Route User
-	userRoute := route.Group("/users") //Untuk grouping Route atau bisa disebut Prefix
-	userRoute.GET("/", user_controller.Index)
-	userRoute.GET("/paginate", user_controller.IndexPaginate)
-	userRoute.GET("/:id", user_controller.Show)
-	userRoute.POST("", user_controller.Store)
-	userRoute.PUT("/:id", user_controller.Update)
-	userRoute.DELETE("/:id", user_controller.Delete)
+	// Base route group with /api prefix
+	api := app.Group("/api")
 
-	//Route File
-	fileRoute := route.Group("/file", middleware.AuthMiddleware) //Kalau nambahin Middleware
+	//Auth Routes
+	authRoute := api.Group("/auth")
+	authRoute.POST("/register", user_controller.Register)
+
+	// User routes
+	userRoute := api.Group("/users") // Grouping routes with /users prefix
+	userRoute.GET("/register", user_controller.Register)
+
+	// File routes
+	fileRoute := api.Group("/file", middleware.AuthMiddleware) // Grouping routes with /file prefix and middleware
 	fileRoute.POST("/", file_controller.HandleUploadFile)
 	fileRoute.DELETE("/:filename", file_controller.HandleRemoveFile)
 }
