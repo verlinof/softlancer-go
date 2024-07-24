@@ -165,6 +165,13 @@ func Login(c *gin.Context) {
 	c.JSON(http.StatusOK, successResponse)
 }
 
+func Tes(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"message": "Success",
+	})
+}
+
+// RESS
 func Show(c *gin.Context) {
 	//Get ID
 	id := c.Param("id")
