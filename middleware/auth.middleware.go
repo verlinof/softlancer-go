@@ -25,7 +25,7 @@ func AuthLogin(c *gin.Context) {
 	// Get Token From Header
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
-		c.JSON(http.StatusUnauthorized, errResponse)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
 		return
 	}
 
@@ -35,13 +35,13 @@ func AuthLogin(c *gin.Context) {
 	// Check Token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return secretKey, nil
 	})
 
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, errResponse)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
 		return
 	}
 
@@ -56,9 +56,8 @@ func AuthLogin(c *gin.Context) {
 		// Check User
 		var user models.User
 		database.DB.First(&user, claims["sub"])
-		fmt.Println(user)
 		if user.ID == 0 { // Assuming user.ID is of type uint or similar
-			c.JSON(http.StatusUnauthorized, errResponse)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
 			return
 		}
 
@@ -66,10 +65,7 @@ func AuthLogin(c *gin.Context) {
 		c.Set("user", user)
 		// Next
 		c.Next()
-		return
 	} else {
-		c.JSON(http.StatusUnauthorized, errResponse)
-		return
+		c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
 	}
-	return
 }

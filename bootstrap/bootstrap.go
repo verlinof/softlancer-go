@@ -11,7 +11,7 @@ import (
 	"github.com/verlinof/softlancer-go/routes"
 )
 
-//Function capital agar dapat diakses diluar package
+// Function capital agar dapat diakses diluar package
 func Bootstrap() {
 	//Load .env file
 	err := godotenv.Load()
@@ -25,7 +25,7 @@ func Bootstrap() {
 
 	//Load database
 	database.ConnectDatabase()
-	
+
 	//Init GIN ENGINE
 	app := gin.Default()
 
