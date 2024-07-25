@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -20,7 +21,6 @@ func AuthLogin(c *gin.Context) {
 		StatusCode: 401,
 		Error:      "Unauthorized",
 	}
-	secretKey := []byte(os.Getenv("JWT_SECRET_KEY"))
 
 	// Get Token From Header
 	authHeader := c.GetHeader("Authorization")
@@ -37,7 +37,7 @@ func AuthLogin(c *gin.Context) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return secretKey, nil
+		return []byte(os.Getenv("JWT_SECRET_KEY")), nil
 	})
 
 	if err != nil {
@@ -56,7 +56,8 @@ func AuthLogin(c *gin.Context) {
 		// Check User
 		var user models.User
 		database.DB.First(&user, claims["sub"])
-		if user.ID == 0 { // Assuming user.ID is of type uint or similar
+		if *user.Id == 0 { // Assuming user.ID is of type uint or similar
+			log.Fatal(user.Id)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
 			return
 		}

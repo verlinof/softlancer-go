@@ -139,7 +139,7 @@ func Login(c *gin.Context) {
 
 	// Create JWT token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.ID,                                   //Subject is User ID
+		"sub": user.Id,                                   //Subject is User ID
 		"exp": time.Now().Add(time.Hour * 24 * 7).Unix(), //Token will expire in 7 days
 	})
 
