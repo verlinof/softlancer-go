@@ -3,7 +3,6 @@ package user_controller
 import (
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -14,6 +13,78 @@ import (
 	"github.com/verlinof/softlancer-go/responses"
 	"golang.org/x/crypto/bcrypt"
 )
+
+func Login(c *gin.Context) {
+	var userReq requests.LoginRequest
+	var user models.User
+	var errResponse responses.ErrorResponse
+
+	// Get the email and pass from req body
+	if err := (c.ShouldBind(&userReq)); err != nil {
+		errResponse = responses.ErrorResponse{
+			Status:     "error",
+			StatusCode: 400,
+			Error:      err.Error(),
+		}
+
+		c.AbortWithStatusJSON(http.StatusBadRequest, errResponse)
+		return
+	}
+
+	// Find requested User
+	database.DB.Table("users").Where("email = ?", userReq.Email).First(&user)
+	if *user.ID == 0 {
+		errResponse = responses.ErrorResponse{
+			Status:     "error",
+			StatusCode: 400,
+			Error:      "Invalid Credentials",
+		}
+
+		c.AbortWithStatusJSON(http.StatusBadRequest, errResponse)
+		return
+	}
+
+	// Compare the password
+	err := bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(userReq.Password))
+
+	if err != nil {
+		errResponse = responses.ErrorResponse{
+			Status:     "error",
+			StatusCode: 400,
+			Error:      "Invalid Credential",
+		}
+
+		c.AbortWithStatusJSON(http.StatusBadRequest, errResponse)
+		return
+	}
+
+	// Create JWT token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": user.ID,                                   //Subject is User ID
+		"exp": time.Now().Add(time.Hour * 24 * 7).Unix(), //Token will expire in 7 days
+	})
+
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET_KEY")))
+
+	if err != nil {
+		errResponse = responses.ErrorResponse{
+			Status:     "error",
+			StatusCode: 500,
+			Error:      "Failed to create token",
+		}
+
+		c.AbortWithStatusJSON(http.StatusInternalServerError, errResponse)
+		return
+	}
+
+	successResponse := responses.LoginResponse{
+		Status:  "success",
+		Message: "Success",
+		Token:   tokenString,
+	}
+
+	c.JSON(http.StatusOK, successResponse)
+}
 
 func Register(c *gin.Context) {
 	userReq := new(requests.UserRequest)
@@ -34,7 +105,7 @@ func Register(c *gin.Context) {
 	userEmailExist := new(models.User)
 	database.DB.Table("users").Where("email = ?", userReq.Email).First(&userEmailExist)
 
-	if userEmailExist.Id != nil {
+	if userEmailExist.ID != nil {
 		errorResponse := responses.ErrorResponse{
 			Status:     "error",
 			StatusCode: 400,
@@ -80,7 +151,7 @@ func Register(c *gin.Context) {
 	}
 
 	userResponse := responses.UserResponse{
-		Id:      user.Id,
+		Id:      user.ID,
 		Name:    user.Name,
 		Address: user.Address,
 		Email:   user.Email,
@@ -94,116 +165,36 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusOK, successResponse)
 }
 
-func Login(c *gin.Context) {
-	var userReq requests.LoginRequest
-	var user models.User
-	var errResponse responses.ErrorResponse
-	// Get the email and pass from req body
-	if err := (c.ShouldBind(&userReq)); err != nil {
-		errResponse = responses.ErrorResponse{
-			Status:     "error",
-			StatusCode: 400,
-			Error:      err.Error(),
-		}
-
-		c.AbortWithStatusJSON(http.StatusBadRequest, errResponse)
-		return
-	}
-
-	// Find requested User
-	database.DB.Table("users").Where("email = ?", userReq.Email).First(&user)
-	if *user.Id == 0 {
-		errResponse = responses.ErrorResponse{
-			Status:     "error",
-			StatusCode: 400,
-			Error:      "Invalid Credentials",
-		}
-
-		c.AbortWithStatusJSON(http.StatusBadRequest, errResponse)
-		return
-	}
-
-	// Compare the password
-	err := bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(userReq.Password))
-
-	if err != nil {
-		errResponse = responses.ErrorResponse{
-			Status:     "error",
-			StatusCode: 400,
-			Error:      "Invalid Credential",
-		}
-
-		c.AbortWithStatusJSON(http.StatusBadRequest, errResponse)
-		return
-	}
-
-	// Create JWT token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.Id,                                   //Subject is User ID
-		"exp": time.Now().Add(time.Hour * 24 * 7).Unix(), //Token will expire in 7 days
-	})
-
-	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET_KEY")))
-
-	if err != nil {
-		errResponse = responses.ErrorResponse{
+func Profile(c *gin.Context) {
+	userId, exists := c.Get("user")
+	if !exists {
+		errorResponse := responses.ErrorResponse{
 			Status:     "error",
 			StatusCode: 500,
-			Error:      "Failed to create token",
+			Error:      "Internal Server Error",
 		}
-
-		c.AbortWithStatusJSON(http.StatusInternalServerError, errResponse)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, errorResponse)
 		return
 	}
 
-	successResponse := responses.LoginResponse{
-		Status:  "success",
-		Message: "Success",
-		Token:   tokenString,
-	}
-
-	c.JSON(http.StatusOK, successResponse)
-}
-
-func Tes(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "Success",
-	})
-}
-
-// RESS
-func Show(c *gin.Context) {
-	//Get ID
-	id := c.Param("id")
-	user := new(models.User)
-	err := database.DB.First(&user, id)
-
-	//Error handling
-	if user.Id == nil {
-		c.AbortWithStatusJSON(404, gin.H{
-			"message": "User not found",
-		})
+	var user models.User
+	if err := database.DB.First(&user, userId).Error; err != nil {
+		errorResponse := responses.ErrorResponse{
+			Status:     "error",
+			StatusCode: 500,
+			Error:      "User not found",
+		}
+		c.AbortWithStatusJSON(http.StatusInternalServerError, errorResponse)
 		return
 	}
 
-	if err.Error != nil {
-		c.AbortWithStatusJSON(500, gin.H{
-			"message": "Internal server error",
-		})
-		return
-	}
-
-	response := responses.UserResponse{
-		Id:      user.Id,
+	userResponse := responses.UserResponse{
+		Id:      user.ID,
 		Name:    user.Name,
 		Address: user.Address,
 		Email:   user.Email,
 	}
-
-	c.JSON(200, gin.H{
-		"message": "Success",
-		"data":    response,
-	})
+	c.JSON(http.StatusOK, userResponse)
 }
 
 func Update(c *gin.Context) {
@@ -245,65 +236,10 @@ func Update(c *gin.Context) {
 	})
 }
 
-func Delete(c *gin.Context) {
-	id := c.Param("id")
-	user := new(models.User)
-
-	//Find User
-	database.DB.Table("users").Where("id = ?", id).First(&user)
-	errDb := database.DB.Table("users").Where("id = ?", id).Delete(&user).Error
-	if errDb != nil {
-		c.JSON(500, gin.H{
-			"message": errDb.Error(),
-		})
-		return
-	}
-
-	response := responses.UserResponse{
-		Id:      user.Id,
-		Name:    user.Name,
-		Address: user.Address,
-		Email:   user.Email,
-	}
-
-	//Success
-	c.JSON(200, gin.H{
+func Tes(c *gin.Context) {
+	id, _ := c.Get("user")
+	c.JSON(http.StatusOK, gin.H{
 		"message": "Success",
-		"data":    response,
-	})
-}
-
-func IndexPaginate(c *gin.Context) {
-	page := c.Query("page")
-	if page == "" {
-		page = "1"
-	}
-	perPage := c.Query("per_page")
-	if perPage == "" {
-		perPage = "10"
-	}
-	users := new([]models.User) //Buat array
-
-	perPageInt, _ := strconv.Atoi(perPage)
-	pageInt, _ := strconv.Atoi(page)
-	if pageInt < 1 {
-		pageInt = 1
-	}
-
-	//Get all users
-	err := database.DB.Table("users").Offset((pageInt - 1) * perPageInt).Limit(perPageInt).Find(&users).Error
-
-	if err != nil {
-		c.AbortWithStatusJSON(500, gin.H{
-			"message": "Internal server error",
-		})
-		return
-	}
-
-	c.JSON(200, gin.H{
-		"message":  "Success",
-		"data":     users,
-		"page":     pageInt,
-		"per_page": perPageInt,
+		"user":    id,
 	})
 }

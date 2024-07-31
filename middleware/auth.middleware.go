@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -21,6 +20,7 @@ func AuthLogin(c *gin.Context) {
 		StatusCode: 401,
 		Error:      "Unauthorized",
 	}
+	var user models.User
 
 	// Get Token From Header
 	authHeader := c.GetHeader("Authorization")
@@ -54,16 +54,14 @@ func AuthLogin(c *gin.Context) {
 		}
 
 		// Check User
-		var user models.User
 		database.DB.First(&user, claims["sub"])
-		if *user.Id == 0 { // Assuming user.ID is of type uint or similar
-			log.Fatal(user.Id)
+		if *user.ID == 0 { // Assuming user.ID is of type uint or similar
 			c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
 			return
 		}
 
 		// Set User To Context
-		c.Set("user", user)
+		c.Set("user", user.ID)
 		// Next
 		c.Next()
 	} else {

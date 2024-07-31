@@ -15,6 +15,8 @@ func InitRoute(app *gin.Engine) {
 	// Base route group with /api prefix
 	api := app.Group("/api")
 
+	api.GET("/tes", middleware.AuthLogin, user_controller.Tes)
+
 	//Auth Routes
 	authRoute := api.Group("/auth")
 	authRoute.POST("/login", user_controller.Login)
@@ -22,9 +24,7 @@ func InitRoute(app *gin.Engine) {
 
 	// User routes
 	userRoute := api.Group("/users") // Grouping routes with /users prefix
-	userRoute.GET("/register", user_controller.Register)
-
-	api.GET("/tes", middleware.AuthLogin, user_controller.Tes)
+	userRoute.GET("/profile", middleware.AuthLogin, user_controller.Profile)
 
 	// File routes
 	fileRoute := api.Group("/file", middleware.AuthLogin) // Grouping routes with /file prefix and middleware

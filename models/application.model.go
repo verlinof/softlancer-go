@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type Application struct {
 	gorm.Model
-	Id             *int `json:"id" gorm:"primaryKey"`
+	ID             *uint `json:"id" gorm:"primaryKey"`
 	UserID         *int
 	User           *User `json:"user" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	ProjectID      *int
