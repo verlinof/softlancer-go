@@ -194,13 +194,21 @@ func Profile(c *gin.Context) {
 		Address: user.Address,
 		Email:   user.Email,
 	}
-	c.JSON(http.StatusOK, userResponse)
+	successReponse := responses.SuccessResponse{
+		Status:  "success",
+		Message: "Success to get user profile",
+		Data:    userResponse,
+	}
+
+	c.JSON(http.StatusOK, successReponse)
 }
 
 func Update(c *gin.Context) {
-	id := c.Param("id")
+	id, _ := c.Get("user")
+	// Initialize Validator
+	// var validate *validator.Validate
 	user := new(models.User)
-	userReq := new(requests.UserRequest)
+	userReq := new(requests.UpdateUserRequest)
 
 	//If error with the Request Body
 	if errReq := c.ShouldBind(&userReq); errReq != nil {
@@ -213,19 +221,24 @@ func Update(c *gin.Context) {
 	//Find User
 	errDb := database.DB.Table("users").Where("id = ?", id).First(&user).Error
 	if errDb != nil {
-		c.JSON(500, gin.H{
-			"message": errDb.Error(),
-		})
+		errorResponse := responses.ErrorResponse{
+			Status:     "error",
+			StatusCode: 500,
+			Error:      "Internal Server Error",
+		}
+		c.AbortWithStatusJSON(http.StatusInternalServerError, errorResponse)
 		return
 	}
 
 	//Update User
 	errUpdate := database.DB.Model(&user).Updates(&userReq).Error
 	if errUpdate != nil {
-		c.JSON(500, gin.H{
-			"message": "Failed to update user",
-			"error":   errUpdate.Error(),
-		})
+		errorResponse := responses.ErrorResponse{
+			Status:     "error",
+			StatusCode: 500,
+			Error:      "Error Updating User",
+		}
+		c.AbortWithStatusJSON(http.StatusInternalServerError, errorResponse)
 		return
 	}
 
@@ -233,13 +246,5 @@ func Update(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "Success",
 		"data":    user,
-	})
-}
-
-func Tes(c *gin.Context) {
-	id, _ := c.Get("user")
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Success",
-		"user":    id,
 	})
 }
