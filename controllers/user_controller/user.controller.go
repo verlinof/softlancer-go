@@ -151,7 +151,7 @@ func Register(c *gin.Context) {
 	}
 
 	userResponse := responses.UserResponse{
-		Id:      user.ID,
+		ID:      user.ID,
 		Name:    user.Name,
 		Address: user.Address,
 		Email:   user.Email,
@@ -178,7 +178,7 @@ func Profile(c *gin.Context) {
 	}
 
 	var user models.User
-	if err := database.DB.First(&user, userId).Error; err != nil {
+	if err := database.DB.First(&user, userId); err.Error != nil {
 		errorResponse := responses.ErrorResponse{
 			Status:     "error",
 			StatusCode: 500,
@@ -189,7 +189,7 @@ func Profile(c *gin.Context) {
 	}
 
 	userResponse := responses.UserResponse{
-		Id:      user.ID,
+		ID:      user.ID,
 		Name:    user.Name,
 		Address: user.Address,
 		Email:   user.Email,
@@ -209,6 +209,7 @@ func Update(c *gin.Context) {
 	// var validate *validator.Validate
 	user := new(models.User)
 	userReq := new(requests.UpdateUserRequest)
+	userRes := new(responses.UserResponse)
 
 	//If error with the Request Body
 	if errReq := c.ShouldBind(&userReq); errReq != nil {
@@ -231,7 +232,7 @@ func Update(c *gin.Context) {
 	}
 
 	//Update User
-	errUpdate := database.DB.Model(&user).Updates(&userReq).Error
+	errUpdate := database.DB.Table("users").Where("id = ?", id).Updates(&userReq).Error
 	if errUpdate != nil {
 		errorResponse := responses.ErrorResponse{
 			Status:     "error",
@@ -242,9 +243,14 @@ func Update(c *gin.Context) {
 		return
 	}
 
+	userRes.ID = user.ID
+	userRes.Name = user.Name
+	userRes.Address = user.Address
+	userRes.Email = user.Email
+
 	//Success
 	c.JSON(200, gin.H{
 		"message": "Success",
-		"data":    user,
+		"data":    userRes,
 	})
 }

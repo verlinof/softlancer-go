@@ -7,7 +7,7 @@ func FileValidation(fileHeader *multipart.FileHeader, fileType []string) bool {
 	result := false
 
 	for _, typefile := range fileType {
-		if(typefile == contentType) {
+		if typefile == contentType {
 			result = true
 			break
 		}

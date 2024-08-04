@@ -68,3 +68,58 @@ func AuthLogin(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
 	}
 }
+
+func AuthAdmin(c *gin.Context) {
+	errResponse := responses.ErrorResponse{
+		Status:     "error",
+		StatusCode: 401,
+		Error:      "Unauthorized",
+	}
+	var user models.User
+
+	// Get Token From Header
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
+		return
+	}
+
+	// Remove "Bearer " prefix from the token string
+	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+
+	// Check Token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(os.Getenv("JWT_SECRET_KEY")), nil
+	})
+
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
+		return
+	}
+
+	// Validate Token
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		// Check Expired
+		if float64(time.Now().Unix()) > claims["exp"].(float64) {
+			c.JSON(http.StatusUnauthorized, errResponse)
+			return
+		}
+
+		// Check User
+		database.DB.First(&user, claims["sub"]).Where("is_admin = ?", true)
+		if *user.ID == 0 { // Assuming user.ID is of type uint or similar
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
+			return
+		}
+
+		// Set User To Context
+		c.Set("user", user.ID)
+		// Next
+		c.Next()
+	} else {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
+	}
+}
