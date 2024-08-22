@@ -16,7 +16,6 @@ import (
 
 func AuthLogin(c *gin.Context) {
 	errResponse := responses.ErrorResponse{
-		Status:     "error",
 		StatusCode: 401,
 		Error:      "Unauthorized",
 	}
@@ -71,7 +70,6 @@ func AuthLogin(c *gin.Context) {
 
 func AuthAdmin(c *gin.Context) {
 	errResponse := responses.ErrorResponse{
-		Status:     "error",
 		StatusCode: 401,
 		Error:      "Unauthorized",
 	}
@@ -109,8 +107,14 @@ func AuthAdmin(c *gin.Context) {
 		}
 
 		// Check User
-		database.DB.First(&user, claims["sub"]).Where("is_admin = ?", true)
+		database.DB.First(&user, claims["sub"])
 		if *user.ID == 0 { // Assuming user.ID is of type uint or similar
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
+			return
+		}
+
+		// Check Role
+		if !*user.IsAdmin {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
 			return
 		}

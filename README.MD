@@ -20,3 +20,9 @@ Or
 ```
 go run main.go
 ```
+
+Or
+
+```
+fresh
+```

@@ -1,10 +1,10 @@
 package requests
 
 type UserRequest struct {
-	Name     string `json:"name" binding:"required"`
-	Address  string `json:"address" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+	Name     string `json:"name"`
+	Address  string `json:"address"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 } //Buat ngehandle validation
 
 type UpdateUserRequest struct {
@@ -13,6 +13,6 @@ type UpdateUserRequest struct {
 }
 
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
