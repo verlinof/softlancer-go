@@ -1,4 +1,4 @@
-package user_controller
+package controllers
 
 import (
 	"net/http"
@@ -15,7 +15,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Index(c *gin.Context) {
+type UserController struct{}
+
+func (e *UserController) Index(c *gin.Context) {
 	var userRes []responses.UserResponse
 	err := database.DB.Table("users").
 		Select("id, email, name, address").
@@ -37,7 +39,7 @@ func Index(c *gin.Context) {
 	c.JSON(http.StatusOK, successRes)
 }
 
-func Login(c *gin.Context) {
+func (e *UserController) Login(c *gin.Context) {
 	var userReq requests.LoginRequest
 	var user models.User
 	var errResponse responses.ErrorResponse
@@ -118,7 +120,7 @@ func Login(c *gin.Context) {
 	c.JSON(http.StatusOK, successResponse)
 }
 
-func Register(c *gin.Context) {
+func (e *UserController) Register(c *gin.Context) {
 	var err error
 	userReq := new(requests.UserRequest)
 
@@ -181,7 +183,7 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusOK, successResponse)
 }
 
-func Profile(c *gin.Context) {
+func (e *UserController) Profile(c *gin.Context) {
 	//Get User id from Middleware
 	userId, exists := c.Get("user")
 	if !exists {

@@ -1,4 +1,4 @@
-package project_controller
+package controllers
 
 import (
 	"net/http"
@@ -12,7 +12,9 @@ import (
 	"github.com/verlinof/softlancer-go/validations"
 )
 
-func Index(c *gin.Context) {
+type ProjectController struct{}
+
+func (e *ProjectController) Index(c *gin.Context) {
 	var projectRes []responses.ProjectResponse
 	err := database.DB.Table("projects").
 		Select("id, project_title, project_description, job_type, status").
@@ -39,7 +41,7 @@ func Index(c *gin.Context) {
 	c.JSON(http.StatusOK, successRes)
 }
 
-func Show(c *gin.Context) {
+func (e *ProjectController) Show(c *gin.Context) {
 	var err error
 	var projectRes responses.ProjectResponse
 
@@ -75,7 +77,7 @@ func Show(c *gin.Context) {
 	c.JSON(http.StatusOK, successRes)
 }
 
-func Store(c *gin.Context) {
+func (e *ProjectController) Store(c *gin.Context) {
 	var err error
 	var projectReq requests.ProjectRequest
 	var project models.Project
@@ -135,7 +137,7 @@ func Store(c *gin.Context) {
 	c.JSON(http.StatusOK, successRes)
 }
 
-func Update(c *gin.Context) {
+func (e *ProjectController) Update(c *gin.Context) {
 	var err error
 	var projectReq requests.ProjectRequest
 	var project models.Project
@@ -209,7 +211,7 @@ func Update(c *gin.Context) {
 	c.JSON(http.StatusOK, successRes)
 }
 
-func Delete(c *gin.Context) {
+func (e *ProjectController) Delete(c *gin.Context) {
 	var err error
 	var project models.Project
 	var projectRes responses.ProjectResponse
