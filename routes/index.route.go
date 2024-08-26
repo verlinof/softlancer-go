@@ -21,11 +21,15 @@ func InitRoute(app *gin.Engine) {
 	authRoute.POST("/login", user_controller.Login)
 	authRoute.POST("/register", user_controller.Register)
 	authRoute.GET("/profile", middleware.AuthLogin, user_controller.Profile)
-	authRoute.PATCH("/update-profile", middleware.AuthLogin, user_controller.Update)
+	// authRoute.PATCH("/update-profile", middleware.AuthLogin, user_controller.Update)
 
 	//Projects Route
 	projectRoute := api.Group("/projects")
 	projectRoute.GET("/", project_controller.Index)
+	projectRoute.GET("/:id", project_controller.Show)
+	projectRoute.POST("/", project_controller.Store)
+	projectRoute.PATCH("/:id", project_controller.Update)
+	projectRoute.DELETE("/:id", project_controller.Delete)
 
 	// User routes
 	userRoute := api.Group("/users") // Grouping routes with /users prefix

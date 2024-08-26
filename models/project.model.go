@@ -1,10 +1,7 @@
 package models
 
-import "gorm.io/gorm"
-
 type Project struct {
-	gorm.Model
-	ID                 *uint `json:"id" gorm:"primaryKey"`
+	ID                 uint `json:"id" gorm:"primaryKey"`
 	CompanyID          *int
 	Company            *Company `json:"company" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	RoleID             *int

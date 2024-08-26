@@ -1,11 +1,6 @@
 package models
 
-import (
-	"gorm.io/gorm"
-)
-
 type User struct {
-	gorm.Model
 	ID       *uint   `json:"id" gorm:"primaryKey"`
 	Name     *string `json:"name" gorm:"type:varchar(255);not null"`
 	Address  *string `json:"address" gorm:"type:varchar(255);not null"`
