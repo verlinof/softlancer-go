@@ -20,7 +20,7 @@ func ValidateCreateProject(request *requests.ProjectRequest) []string {
 
 	// =====Job Type=====
 	if request.JobType == "" {
-		validationErrors = append(validationErrors, "Email is required")
+		validationErrors = append(validationErrors, "job type is required")
 	}
 	// Daftar nilai yang diizinkan untuk JobType
 	validJobTypes := map[string]bool{
@@ -36,7 +36,7 @@ func ValidateCreateProject(request *requests.ProjectRequest) []string {
 
 	// =====Status=====
 	if request.Status == "" {
-		validationErrors = append(validationErrors, "Email is required")
+		validationErrors = append(validationErrors, "Status is required")
 	}
 
 	validStatus := map[string]bool{
@@ -49,11 +49,11 @@ func ValidateCreateProject(request *requests.ProjectRequest) []string {
 	}
 
 	// =====Company ID=====
-	if request.CompanyId == nil {
+	if request.CompanyId == 0 {
 		validationErrors = append(validationErrors, "Company ID is required")
 	}
 
-	if (request.CompanyId) != nil {
+	if (request.CompanyId) != 0 {
 		company := new(models.Company)
 		database.DB.Table("companies").Where("id = ?", request.CompanyId).First(&company)
 		if company.ID == nil {
@@ -62,10 +62,10 @@ func ValidateCreateProject(request *requests.ProjectRequest) []string {
 	}
 
 	// =====Role ID=====
-	if request.RoleId == nil {
+	if request.RoleId == 0 {
 		validationErrors = append(validationErrors, "Role id is required")
 	}
-	if request.RoleId != nil {
+	if request.RoleId != 0 {
 		role := new(models.Role)
 		database.DB.Table("roles").Where("id = ?", request.RoleId).First(&role)
 		if role.ID == nil {
@@ -102,7 +102,7 @@ func ValidateUpdateProject(request *requests.ProjectRequest) []string {
 	}
 
 	// =====Company ID=====
-	if (request.CompanyId) != nil {
+	if (request.CompanyId) != 0 {
 		company := new(models.Company)
 		database.DB.Table("companies").Where("id = ?", request.CompanyId).First(&company)
 		if company.ID == nil {
@@ -111,7 +111,7 @@ func ValidateUpdateProject(request *requests.ProjectRequest) []string {
 	}
 
 	// =====Role ID=====
-	if request.RoleId != nil {
+	if request.RoleId != 0 {
 		role := new(models.Role)
 		database.DB.Table("roles").Where("id = ?", request.RoleId).First(&role)
 		if role.ID == nil {

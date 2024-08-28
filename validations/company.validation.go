@@ -33,15 +33,15 @@ func ValidateCreateCompany(request *requests.CreateCompanyRequest) []string {
 
 func ValidateUpdateCompany(request *requests.CreateCompanyRequest) []string {
 	var validationErrors []string
-	var companyExisted *models.Company
+	var companyExisted models.Company
 
 	//Validate Company Name
 	if request.CompanyName == "" {
 		validationErrors = append(validationErrors, "Company name is required")
 	} else {
 		database.DB.First(&companyExisted, "company_name = ?", request.CompanyName)
-		if companyExisted.ID != nil && &request.CompanyName == companyExisted.CompanyName {
-			validationErrors = append(validationErrors, *companyExisted.CompanyName)
+		if companyExisted.ID != nil && &request.CompanyName == &companyExisted.CompanyName {
+			validationErrors = append(validationErrors, "Company name already exist")
 		}
 	}
 

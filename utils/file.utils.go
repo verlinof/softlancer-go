@@ -51,9 +51,9 @@ func HandleUploadFile(c *gin.Context, form string, fileType []string, maxSize in
 	return pathFile, nil
 }
 
-func HandleRemoveFile(filename *string) error {
+func HandleRemoveFile(filename string) error {
 	// filename := c.Param("filename")
-	errRemove := os.Remove(fmt.Sprintf(".%s", *filename))
+	errRemove := os.Remove(fmt.Sprintf(".%s", filename))
 	if errRemove != nil {
 		return fmt.Errorf("error remove file")
 	}

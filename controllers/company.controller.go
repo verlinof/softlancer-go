@@ -139,15 +139,15 @@ func (e *CompanyController) Store(c *gin.Context) {
 	}
 
 	company := models.Company{
-		CompanyName:        &companyReq.CompanyName,
-		CompanyDescription: &companyReq.CompanyDescription,
-		CompanyLogo:        &fileName,
+		CompanyName:        companyReq.CompanyName,
+		CompanyDescription: companyReq.CompanyDescription,
+		CompanyLogo:        fileName,
 	}
 
 	// Create Company
 	err = database.DB.Table("companies").Create(&company).Error
 	if err != nil {
-		utils.HandleRemoveFile(&fileName)
+		utils.HandleRemoveFile(fileName)
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
 			Error:      "Internal server error",
@@ -225,15 +225,15 @@ func (e *CompanyController) Update(c *gin.Context) {
 
 	company = models.Company{
 		ID:                 &parsedId,
-		CompanyName:        &companyReq.CompanyName,
-		CompanyDescription: &companyReq.CompanyDescription,
-		CompanyLogo:        &fileName,
+		CompanyName:        companyReq.CompanyName,
+		CompanyDescription: companyReq.CompanyDescription,
+		CompanyLogo:        fileName,
 	}
 
 	// Update Company
 	err = database.DB.Table("companies").Where("id = ?", parsedId).Updates(&company).Error
 	if err != nil {
-		utils.HandleRemoveFile(&fileName)
+		utils.HandleRemoveFile(fileName)
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
 			Error:      "Internal server error",
@@ -285,7 +285,7 @@ func (e *CompanyController) Destroy(c *gin.Context) {
 	}
 
 	// Remove the file if it exists
-	if company.CompanyLogo != nil {
+	if company.CompanyLogo != "" {
 		defer utils.HandleRemoveFile(company.CompanyLogo)
 	}
 

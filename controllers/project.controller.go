@@ -128,12 +128,12 @@ func (e *ProjectController) Store(c *gin.Context) {
 
 	// Mengisi model project berdasarkan projectReq
 	project = models.Project{
-		ProjectTitle:       &projectReq.ProjectTitle,
-		ProjectDescription: &projectReq.ProjectDescription,
+		ProjectTitle:       projectReq.ProjectTitle,
+		ProjectDescription: projectReq.ProjectDescription,
 		CompanyID:          projectReq.CompanyId,
 		RoleID:             projectReq.RoleId,
-		JobType:            &projectReq.JobType,
-		Status:             &projectReq.Status,
+		JobType:            projectReq.JobType,
+		Status:             projectReq.Status,
 	}
 
 	// Simpan project ke database
@@ -211,12 +211,12 @@ func (e *ProjectController) Update(c *gin.Context) {
 	}
 
 	project = models.Project{
-		ProjectTitle:       &projectReq.ProjectTitle,
-		ProjectDescription: &projectReq.ProjectDescription,
+		ProjectTitle:       projectReq.ProjectTitle,
+		ProjectDescription: projectReq.ProjectDescription,
 		CompanyID:          projectReq.CompanyId,
 		RoleID:             projectReq.RoleId,
-		JobType:            &projectReq.JobType,
-		Status:             &projectReq.Status,
+		JobType:            projectReq.JobType,
+		Status:             projectReq.Status,
 	}
 
 	project.ID = uint(parsedId)
