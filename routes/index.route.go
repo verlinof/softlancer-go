@@ -33,6 +33,7 @@ func InitRoute(app *gin.Engine) {
 	//Projects Route
 	projectRoute := api.Group("/projects")
 	projectRoute.GET("/", projectController.Index)
+	projectRoute.GET("/all", middleware.AuthAdmin, projectController.IndexAdmin)
 	projectRoute.GET("/:id", projectController.Show)
 	projectRoute.POST("/", middleware.AuthAdmin, projectController.Store)
 	projectRoute.PATCH("/:id", middleware.AuthAdmin, projectController.Update)

@@ -1,7 +1,7 @@
 package models
 
 type Project struct {
-	ID                 uint `json:"id" gorm:"primaryKey"`
+	ID                 *uint64 `json:"id" gorm:"primaryKey"`
 	CompanyID          int
 	Company            Company `json:"company" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	RoleID             int

@@ -14,6 +14,45 @@ import (
 
 type ProjectController struct{}
 
+func (e *ProjectController) IndexAdmin(c *gin.Context) {
+	var response []map[string]interface{}
+	err := database.DB.Table("projects").
+		Select(`
+			projects.id, 
+			projects.project_title, 
+			projects.project_description, 
+			projects.job_type, 
+			projects.status,
+			roles.role_name,
+			companies.company_name, 
+			companies.company_description, 
+			companies.company_logo
+		`).
+		Joins("JOIN companies ON projects.company_id = companies.id").
+		Joins("JOIN roles ON projects.role_id = roles.id").
+		Scan(&response).Error
+	if err != nil {
+		errResponse := responses.ErrorResponse{
+			StatusCode: 500,
+			Error:      err.Error(),
+		}
+		c.JSON(http.StatusBadRequest, errResponse)
+		return
+	}
+
+	message := "Success"
+	if len(response) == 0 {
+		message = "Projects data is empty"
+	}
+
+	successRes := responses.SuccessResponse{
+		Message: message,
+		Data:    response,
+	}
+
+	c.JSON(http.StatusOK, successRes)
+}
+
 func (e *ProjectController) Index(c *gin.Context) {
 	var response []map[string]interface{}
 	err := database.DB.Table("projects").
@@ -30,6 +69,7 @@ func (e *ProjectController) Index(c *gin.Context) {
 		`).
 		Joins("JOIN companies ON projects.company_id = companies.id").
 		Joins("JOIN roles ON projects.role_id = roles.id").
+		Where("projects.status = ?", "open").
 		Scan(&response).Error
 	if err != nil {
 		errResponse := responses.ErrorResponse{
@@ -210,19 +250,8 @@ func (e *ProjectController) Update(c *gin.Context) {
 		return
 	}
 
-	project = models.Project{
-		ProjectTitle:       projectReq.ProjectTitle,
-		ProjectDescription: projectReq.ProjectDescription,
-		CompanyID:          projectReq.CompanyId,
-		RoleID:             projectReq.RoleId,
-		JobType:            projectReq.JobType,
-		Status:             projectReq.Status,
-	}
-
-	project.ID = uint(parsedId)
-
 	// Simpan project ke database
-	if err = database.DB.Where("id = ?", parsedId).Updates(&project).Error; err != nil {
+	if err = database.DB.Table("projects").Where("id = ?", parsedId).Updates(&projectReq).Error; err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
 			Error:      err.Error(),
@@ -230,6 +259,9 @@ func (e *ProjectController) Update(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, errResponse)
 		return
 	}
+
+	// Mencari data yang telah diupdate
+	database.DB.Table("projects").Where("id = ?", parsedId).First(&project)
 
 	// Mengembalikan response sukses
 	successRes := responses.SuccessResponse{
@@ -279,7 +311,7 @@ func (e *ProjectController) Destroy(c *gin.Context) {
 		return
 	}
 
-	if projectRes.ID == 0 {
+	if projectRes.ID == nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 404,
 			Error:      "Project not found",
