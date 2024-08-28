@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/verlinof/softlancer-go/database"
@@ -201,6 +202,7 @@ func (e *CompanyController) Update(c *gin.Context) {
 	}
 
 	company = models.Company{
+		ID:                 &parsedId,
 		CompanyName:        &companyReq.CompanyName,
 		CompanyDescription: &companyReq.CompanyDescription,
 		CompanyLogo:        &fileName,
@@ -217,7 +219,7 @@ func (e *CompanyController) Update(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, errResponse)
 		return
 	}
-	utils.HandleRemoveFile(oldCompany.CompanyLogo)
+	defer utils.HandleRemoveFile(oldCompany.CompanyLogo)
 
 	successRes := responses.SuccessResponse{
 		Message: "Success",
@@ -239,12 +241,33 @@ func (e *CompanyController) Destroy(c *gin.Context) {
 		return
 	}
 
-	//Find the old data
+	// Find the old data
 	var company models.Company
-	database.DB.Table("companies").Where("id = ?", parsedId).First(&company)
-	utils.HandleRemoveFile(company.CompanyLogo)
+	err = database.DB.Table("companies").Where("id = ?", parsedId).First(&company).Error
+	if err != nil {
+		if strings.Contains(err.Error(), "record not found") {
+			errResponse := responses.ErrorResponse{
+				StatusCode: 404,
+				Error:      "Company not found",
+			}
+			c.JSON(http.StatusNotFound, errResponse)
+			return
+		}
 
-	// Delete Company
+		errResponse := responses.ErrorResponse{
+			StatusCode: 500,
+			Error:      "Internal server error",
+		}
+		c.JSON(http.StatusInternalServerError, errResponse)
+		return
+	}
+
+	// Remove the file if it exists
+	if company.CompanyLogo != nil {
+		defer utils.HandleRemoveFile(company.CompanyLogo)
+	}
+
+	// Delete the Company
 	err = database.DB.Table("companies").Where("id = ?", parsedId).Delete(&company).Error
 	if err != nil {
 		errResponse := responses.ErrorResponse{
@@ -257,7 +280,7 @@ func (e *CompanyController) Destroy(c *gin.Context) {
 
 	successRes := responses.SuccessResponse{
 		Message: "Success",
-		Data:    company,
+		Data:    &company,
 	}
 
 	c.JSON(http.StatusOK, successRes)
