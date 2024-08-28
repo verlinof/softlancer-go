@@ -12,12 +12,6 @@ go run migration/migration.go
 2. Run the Application
 
 ```
-CompileDaemon -command="./softlancer-go"
-```
-
-Or
-
-```
 go run main.go
 ```
 

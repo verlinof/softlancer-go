@@ -41,7 +41,7 @@ func (e *UserController) Index(c *gin.Context) {
 
 func (e *UserController) Login(c *gin.Context) {
 	var userReq requests.LoginRequest
-	var user models.User
+	var user *models.User
 	var errResponse responses.ErrorResponse
 
 	// Get the email and pass from req body
@@ -112,7 +112,6 @@ func (e *UserController) Login(c *gin.Context) {
 	}
 
 	successResponse := responses.LoginResponse{
-		Status:  "success",
 		Message: "Success",
 		Token:   tokenString,
 	}
@@ -173,7 +172,7 @@ func (e *UserController) Register(c *gin.Context) {
 	successResponse := responses.SuccessResponse{
 		Message: "Success",
 		Data: responses.UserResponse{
-			ID:      user.ID,
+			// ID:      user.ID,
 			Name:    user.Name,
 			Address: user.Address,
 			Email:   user.Email,
@@ -208,7 +207,7 @@ func (e *UserController) Profile(c *gin.Context) {
 	successReponse := responses.SuccessResponse{
 		Message: "Success to get user profile",
 		Data: responses.UserResponse{
-			ID:      user.ID,
+			// ID:      user.ID,
 			Name:    user.Name,
 			Address: user.Address,
 			Email:   user.Email,

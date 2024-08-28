@@ -15,10 +15,22 @@ import (
 type ProjectController struct{}
 
 func (e *ProjectController) Index(c *gin.Context) {
-	var projectRes []responses.ProjectResponse
+	var response []map[string]interface{}
 	err := database.DB.Table("projects").
-		Select("id, project_title, project_description, job_type, status").
-		Scan(&projectRes).Error
+		Select(`
+			projects.id, 
+			projects.project_title, 
+			projects.project_description, 
+			projects.job_type, 
+			projects.status,
+			roles.role_name,
+			companies.company_name, 
+			companies.company_description, 
+			companies.company_logo
+		`).
+		Joins("JOIN companies ON projects.company_id = companies.id").
+		Joins("JOIN roles ON projects.role_id = roles.id").
+		Scan(&response).Error
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
@@ -29,13 +41,13 @@ func (e *ProjectController) Index(c *gin.Context) {
 	}
 
 	message := "Success"
-	if len(projectRes) == 0 {
+	if len(response) == 0 {
 		message = "Projects data is empty"
 	}
 
 	successRes := responses.SuccessResponse{
 		Message: message,
-		Data:    projectRes,
+		Data:    response,
 	}
 
 	c.JSON(http.StatusOK, successRes)
@@ -43,24 +55,36 @@ func (e *ProjectController) Index(c *gin.Context) {
 
 func (e *ProjectController) Show(c *gin.Context) {
 	var err error
-	var projectRes responses.ProjectResponse
+	var response []map[string]interface{}
 
 	id := c.Param("id")
 	err = database.DB.Table("projects").
-		Select("id, project_title, project_description, job_type, status").
-		Where("id = ?", id).
-		Scan(&projectRes).Error
+		Select(`
+		projects.id, 
+		projects.project_title, 
+		projects.project_description, 
+		projects.job_type, 
+		projects.status,
+		roles.role_name,
+		companies.company_name, 
+		companies.company_description, 
+		companies.company_logo
+	`).
+		Joins("JOIN companies ON projects.company_id = companies.id").
+		Joins("JOIN roles ON projects.role_id = roles.id").
+		Where("projects.id = ?", id).
+		Scan(&response).Error
 
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
 			Error:      err.Error(),
 		}
-		c.JSON(http.StatusBadRequest, errResponse)
+		c.JSON(http.StatusInternalServerError, errResponse)
 		return
 	}
 
-	if projectRes.ID == 0 {
+	if len(response) == 0 {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 404,
 			Error:      "Project not found",
@@ -71,7 +95,7 @@ func (e *ProjectController) Show(c *gin.Context) {
 
 	successRes := responses.SuccessResponse{
 		Message: "Success",
-		Data:    projectRes,
+		Data:    response[0], // Mengambil hasil pertama dari slice sebagai response
 	}
 
 	c.JSON(http.StatusOK, successRes)
@@ -211,7 +235,7 @@ func (e *ProjectController) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, successRes)
 }
 
-func (e *ProjectController) Delete(c *gin.Context) {
+func (e *ProjectController) Destroy(c *gin.Context) {
 	var err error
 	var project models.Project
 	var projectRes responses.ProjectResponse
