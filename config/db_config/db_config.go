@@ -11,32 +11,32 @@ var DB_NAME = "go_restful"
 
 func InitDatabaseConfig() {
 	driverEnv := os.Getenv("DB_DRIVER")
-	if(driverEnv != "") {
+	if driverEnv != "" {
 		DB_DRIVER = driverEnv
 	}
-	
+
 	hostEnv := os.Getenv("DB_HOST")
-	if(hostEnv != "") {
+	if hostEnv != "" {
 		DB_HOST = hostEnv
 	}
 
 	portEnv := os.Getenv("DB_PORT")
-	if(portEnv != "") {
+	if portEnv != "" {
 		DB_PORT = portEnv
 	}
 
 	userEnv := os.Getenv("DB_USER")
-	if(userEnv != "") {
+	if userEnv != "" {
 		DB_USER = userEnv
 	}
 
 	passwordEnv := os.Getenv("DB_PASSWORD")
-	if(passwordEnv != "") {
+	if passwordEnv != "" {
 		DB_PASSWORD = passwordEnv
 	}
 
 	nameEnv := os.Getenv("DB_NAME")
-	if(nameEnv != "") {
+	if nameEnv != "" {
 		DB_NAME = nameEnv
 	}
 }
