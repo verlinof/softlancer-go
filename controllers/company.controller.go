@@ -18,21 +18,30 @@ type CompanyController struct{}
 
 func (e *CompanyController) Index(c *gin.Context) {
 	var companyRes []responses.CompanyResponse
+
+	// Query the database
 	err := database.DB.Table("companies").
 		Select("id, company_name, company_description, company_logo").
 		Scan(&companyRes).Error
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
-			Error:      err.Error(),
+			Error:      "Failed to retrieve company data",
 		}
-		c.JSON(http.StatusBadRequest, errResponse)
+		c.JSON(http.StatusInternalServerError, errResponse)
 		return
 	}
 
+	// Update company logo URLs with the base API endpoint
+	for i := range companyRes {
+		logoPath := utils.PrefixBaseUrl(*companyRes[i].CompanyLogo)
+		companyRes[i].CompanyLogo = logoPath
+	}
+
+	// Prepare the response message
 	message := "Success"
 	if len(companyRes) == 0 {
-		message = "Company data is empty"
+		message = "No company data available"
 	}
 
 	successRes := responses.SuccessResponse{
@@ -40,6 +49,7 @@ func (e *CompanyController) Index(c *gin.Context) {
 		Data:    companyRes,
 	}
 
+	// Return the JSON response
 	c.JSON(http.StatusOK, successRes)
 }
 
@@ -80,6 +90,10 @@ func (e *CompanyController) Show(c *gin.Context) {
 		c.JSON(http.StatusNotFound, errResponse)
 		return
 	}
+
+	//Prefixing Base URL
+	logoPath := utils.PrefixBaseUrl(*companyRes.CompanyLogo)
+	companyRes.CompanyLogo = logoPath
 
 	successRes := responses.SuccessResponse{
 		Message: "Success",
