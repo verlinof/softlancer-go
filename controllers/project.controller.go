@@ -165,8 +165,30 @@ func (e *ProjectController) Update(c *gin.Context) {
 	var err error
 	var projectReq requests.ProjectRequest
 	var project models.Project
+	var oldProject models.Project
 
 	id := c.Param("id")
+	// Mengisi model project berdasarkan projectReq
+	parsedId, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		errResponse := responses.ErrorResponse{
+			StatusCode: 500,
+			Error:      "Invalid ID",
+		}
+		c.JSON(http.StatusInternalServerError, errResponse)
+		return
+	}
+
+	//Find the old data
+	err = database.DB.Table("projects").Where("id = ?", parsedId).First(&oldProject).Error
+	if err != nil {
+		errResponse := responses.ErrorResponse{
+			StatusCode: 404,
+			Error:      "Project not found",
+		}
+		c.JSON(http.StatusNotFound, errResponse)
+		return
+	}
 
 	// Bind request body ke struct ProjectRequest
 	if err = c.ShouldBind(&projectReq); err != nil {
@@ -195,17 +217,6 @@ func (e *ProjectController) Update(c *gin.Context) {
 		RoleID:             projectReq.RoleId,
 		JobType:            &projectReq.JobType,
 		Status:             &projectReq.Status,
-	}
-
-	// Mengisi model project berdasarkan projectReq
-	parsedId, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 500,
-			Error:      "Invalid ID",
-		}
-		c.JSON(http.StatusInternalServerError, errResponse)
-		return
 	}
 
 	project.ID = uint(parsedId)

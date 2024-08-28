@@ -182,7 +182,15 @@ func (e *CompanyController) Update(c *gin.Context) {
 	}
 
 	//Find the old data
-	database.DB.Table("companies").Where("id = ?", parsedId).First(&oldCompany)
+	err = database.DB.Table("companies").Where("id = ?", parsedId).First(&oldCompany).Error
+	if err != nil {
+		errResponse := responses.ErrorResponse{
+			StatusCode: 404,
+			Error:      "Company not found",
+		}
+		c.JSON(http.StatusNotFound, errResponse)
+		return
+	}
 
 	if err = c.ShouldBind(&companyReq); err != nil {
 		errResponse := responses.ErrorResponse{
