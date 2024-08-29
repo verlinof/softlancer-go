@@ -40,7 +40,7 @@ func ValidateUpdateCompany(request *requests.CreateCompanyRequest) []string {
 		validationErrors = append(validationErrors, "Company name is required")
 	} else {
 		database.DB.First(&companyExisted, "company_name = ?", request.CompanyName)
-		if companyExisted.ID != nil && &request.CompanyName == &companyExisted.CompanyName {
+		if companyExisted.ID != nil && request.CompanyName == companyExisted.CompanyName {
 			validationErrors = append(validationErrors, "Company name already exist")
 		}
 	}

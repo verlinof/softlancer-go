@@ -34,8 +34,8 @@ func (e *CompanyController) Index(c *gin.Context) {
 
 	// Update company logo URLs with the base API endpoint
 	for i := range companyRes {
-		logoPath := utils.PrefixBaseUrl(*companyRes[i].CompanyLogo)
-		companyRes[i].CompanyLogo = logoPath
+		logoPath := utils.PrefixBaseUrl(companyRes[i].CompanyLogo)
+		companyRes[i].CompanyLogo = *logoPath
 	}
 
 	// Prepare the response message
@@ -82,7 +82,7 @@ func (e *CompanyController) Show(c *gin.Context) {
 		return
 	}
 
-	if companyRes.ID == 0 {
+	if companyRes.ID == nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 404,
 			Error:      "Company not found",
@@ -92,8 +92,8 @@ func (e *CompanyController) Show(c *gin.Context) {
 	}
 
 	//Prefixing Base URL
-	logoPath := utils.PrefixBaseUrl(*companyRes.CompanyLogo)
-	companyRes.CompanyLogo = logoPath
+	logoPath := utils.PrefixBaseUrl(companyRes.CompanyLogo)
+	companyRes.CompanyLogo = *logoPath
 
 	successRes := responses.SuccessResponse{
 		Message: "Success",
