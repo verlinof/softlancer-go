@@ -100,15 +100,15 @@ func (e *ProjectController) Show(c *gin.Context) {
 	id := c.Param("id")
 	err = database.DB.Table("projects").
 		Select(`
-		projects.id, 
-		projects.project_title, 
-		projects.project_description, 
-		projects.job_type, 
-		projects.status,
-		roles.role_name,
-		companies.company_name, 
-		companies.company_description, 
-		companies.company_logo
+			projects.id, 
+			projects.project_title, 
+			projects.project_description, 
+			projects.job_type, 
+			projects.status,
+			roles.role_name,
+			companies.company_name, 
+			companies.company_description, 
+			companies.company_logo
 	`).
 		Joins("JOIN companies ON projects.company_id = companies.id").
 		Joins("JOIN roles ON projects.role_id = roles.id").

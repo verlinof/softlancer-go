@@ -81,7 +81,7 @@ func (e *UserController) Login(c *gin.Context) {
 	}
 
 	// Compare the password
-	err := bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(userReq.Password))
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(userReq.Password))
 
 	if err != nil {
 		errResponse = responses.ErrorResponse{
@@ -151,10 +151,10 @@ func (e *UserController) Register(c *gin.Context) {
 
 	//Create User
 	user := models.User{
-		Name:     &userReq.Name,
-		Address:  &userReq.Address,
-		Email:    &userReq.Email,
-		Password: &hashedPasswordStr,
+		Name:     userReq.Name,
+		Address:  userReq.Address,
+		Email:    userReq.Email,
+		Password: hashedPasswordStr,
 	}
 
 	err = database.DB.Create(&user).Error
@@ -172,7 +172,7 @@ func (e *UserController) Register(c *gin.Context) {
 	successResponse := responses.SuccessResponse{
 		Message: "Success",
 		Data: responses.UserResponse{
-			// ID:      user.ID,
+			ID:      user.ID,
 			Name:    user.Name,
 			Address: user.Address,
 			Email:   user.Email,
@@ -207,7 +207,7 @@ func (e *UserController) Profile(c *gin.Context) {
 	successReponse := responses.SuccessResponse{
 		Message: "Success to get user profile",
 		Data: responses.UserResponse{
-			// ID:      user.ID,
+			ID:      user.ID,
 			Name:    user.Name,
 			Address: user.Address,
 			Email:   user.Email,

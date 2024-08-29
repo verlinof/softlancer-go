@@ -114,7 +114,7 @@ func AuthAdmin(c *gin.Context) {
 		}
 
 		// Check Role
-		if !*user.IsAdmin {
+		if !user.IsAdmin {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
 			return
 		}
