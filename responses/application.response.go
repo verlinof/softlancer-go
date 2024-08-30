@@ -4,8 +4,8 @@ type ApplicationResponse struct {
 	ID             *uint64 `json:"id"`
 	ProjectID      *uint64 `json:"project_id"`
 	ProjectTitle   string  `json:"project_title"`
-	RoleName       string  `json:"role_name"`
 	RoleID         *uint64 `json:"role_id"`
+	RoleName       string  `json:"role_name"`
 	CuriculumVitae string  `json:"curiculum_vitae"`
 	Portofolio     string  `json:"portofolio"`
 	Status         string  `json:"status"`

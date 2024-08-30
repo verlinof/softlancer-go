@@ -6,17 +6,17 @@
 1. Run Migrations
 
 ```
-go run migration/migration.go
+go run cmd/database/migration.go
 ```
 
 2. Run the Application
 
 ```
-go run main.go
+go run cmd/server/main.go
 ```
 
 Or
 
 ```
-fresh
+go run github.com/pilu/fresh
 ```

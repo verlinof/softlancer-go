@@ -23,12 +23,14 @@ func (a *ApplicationController) Index(c *gin.Context) {
 		applications.id,
 		projects.id as project_id,
 		projects.project_title, 
+		roles.id as role_id,
 		roles.role_name,
 		applications.curiculum_vitae,
 		applications.portofolio,
 		applications.status
 	`).
 		Scan(&response).Error
+
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
