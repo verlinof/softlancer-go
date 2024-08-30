@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -172,22 +171,11 @@ func (e *ApplicationController) Update(c *gin.Context) {
 	var err error
 	var request requests.UpdateApplicationRequest
 	var application models.Application
-	var oldApplication models.Application
 
-	id := c.Param("id")
-	// Mengisi model application berdasarkan request
-	parsedId, err := strconv.ParseUint(id, 10, 64)
-	if err != nil {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 500,
-			Error:      "Invalid ID",
-		}
-		c.JSON(http.StatusInternalServerError, errResponse)
-		return
-	}
+	id := c.GetUint64("application")
 
 	//Find the old data
-	err = database.DB.Table("projects").Where("id = ?", parsedId).First(&oldApplication).Error
+	err = database.DB.Table("projects").Where("id = ?", id).First(&application).Error
 	if err != nil && strings.Contains(err.Error(), "record not found") {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 404,
@@ -208,7 +196,7 @@ func (e *ApplicationController) Update(c *gin.Context) {
 	}
 
 	// Simpan application ke database
-	if err = database.DB.Table("applications").Where("id = ?", parsedId).Updates(&request).Error; err != nil {
+	if err = database.DB.Table("applications").Where("id = ?", id).Updates(&request).Error; err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
 			Error:      err.Error(),
@@ -218,7 +206,7 @@ func (e *ApplicationController) Update(c *gin.Context) {
 	}
 
 	// Mencari data yang telah diupdate
-	database.DB.Table("applications").Where("id = ?", parsedId).First(&application)
+	database.DB.Table("applications").Where("id = ?", id).First(&application)
 
 	// Mengembalikan response sukses
 	successRes := responses.SuccessResponse{
@@ -239,29 +227,11 @@ func (e *ApplicationController) Update(c *gin.Context) {
 func (e *ApplicationController) Destroy(c *gin.Context) {
 	var application models.Application
 
-	id := c.Param("id")
-	parsedId, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 500,
-			Error:      "Invalid ID",
-		}
-		c.JSON(http.StatusInternalServerError, errResponse)
-		return
-	}
-	err = database.DB.Table("applications").Where("id = ?", parsedId).First(&application).Error
+	id := c.GetUint64("application")
+	//Find the old data
+	database.DB.Find(&application, id)
 
-	if strings.Contains(err.Error(), "record not found") {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 404,
-			Error:      "Application not found",
-		}
-		c.JSON(http.StatusNotFound, errResponse)
-		return
-	}
-
-	err = database.DB.Table("applications").Where("id = ?", parsedId).Delete(&application).Error
-
+	err := database.DB.Table("applications").Where("id = ?", id).Delete(application).Error
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
@@ -273,7 +243,14 @@ func (e *ApplicationController) Destroy(c *gin.Context) {
 
 	successRes := responses.SuccessResponse{
 		Message: "Success to delete application",
-		Data:    application,
+		Data: responses.ApplicationStoreResponse{
+			ID:             application.ID,
+			UserID:         application.UserID,
+			ProjectID:      application.ProjectID,
+			CuriculumVitae: application.CuriculumVitae,
+			Portofolio:     application.Portofolio,
+			Status:         application.Status,
+		},
 	}
 	c.JSON(http.StatusOK, successRes)
 }

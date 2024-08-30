@@ -29,19 +29,19 @@ func ApplicationOwner(c *gin.Context) {
 			StatusCode: 500,
 			Error:      "Invalid ID",
 		}
-		c.JSON(http.StatusInternalServerError, errResponse)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, errResponse)
 		return
 	}
 
 	//Find the application
 	var application models.Application
 	err = database.DB.Table("applications").Where("id = ?", parsedId).First(&application).Error
-	if err != nil {
+	if parsedId == 0 && err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 404,
 			Error:      "Application not found",
 		}
-		c.JSON(http.StatusNotFound, errResponse)
+		c.AbortWithStatusJSON(http.StatusNotFound, errResponse)
 		return
 	}
 
@@ -72,7 +72,7 @@ func ApplicationOwner(c *gin.Context) {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		// Check Expired
 		if float64(time.Now().Unix()) > claims["exp"].(float64) {
-			c.JSON(http.StatusUnauthorized, errResponse)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
 			return
 		}
 
@@ -83,9 +83,19 @@ func ApplicationOwner(c *gin.Context) {
 			return
 		}
 
+		//Check is it valid user or no
+		if *application.UserID != *user.ID {
+			errResponse := responses.ErrorResponse{
+				StatusCode: 401,
+				Error:      "Unauthorized",
+			}
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
+			return
+		}
+
 		// Set User To Context
 		c.Set("user", user.ID)
-		c.Set("application", application)
+		c.Set("application", parsedId)
 		// Next
 		c.Next()
 	} else {

@@ -53,8 +53,8 @@ func InitRoute(app *gin.Engine) {
 	applicationRoute.GET("/", applicationController.Index)
 	applicationRoute.GET("/:id", applicationController.Show)
 	applicationRoute.POST("/", middleware.AuthLogin, applicationController.Store)
-	applicationRoute.PATCH("/:id", middleware.AuthLogin, applicationController.Update)
-	applicationRoute.DELETE("/:id", middleware.AuthLogin, applicationController.Destroy)
+	applicationRoute.PATCH("/:id", middleware.ApplicationOwner, applicationController.Update)
+	applicationRoute.DELETE("/:id", middleware.ApplicationOwner, applicationController.Destroy)
 
 	// File routes
 	// fileRoute := api.Group("/file", middleware.AuthLogin) // Grouping routes with /file prefix and middleware
