@@ -28,7 +28,7 @@ func main() {
 	// Drop the tables if they exist
 	err := database.DB.Migrator().DropTable(&models.User{}, &models.Company{}, &models.Project{}, &models.Role{}, &models.Reference{}, &models.Application{})
 	if err != nil {
-		log.Println("Error dropping tables: ", err)
+		log.Println("Error dropping tables: ", err.Error())
 	} else {
 		log.Println("Tables dropped successfully.")
 	}
@@ -36,7 +36,7 @@ func main() {
 	// Migrate the schema
 	err = database.DB.AutoMigrate(&models.User{}, &models.Company{}, &models.Project{}, &models.Role{}, &models.Reference{}, &models.Application{})
 	if err != nil {
-		log.Println("Error migrating schema: ", err)
+		log.Println("Error migrating schema: ", err.Error())
 	} else {
 		log.Println("Migration complete!")
 	}

@@ -12,6 +12,7 @@ func InitRoute(app *gin.Engine) {
 	var userController *controllers.UserController
 	var projectController *controllers.ProjectController
 	var companyController *controllers.CompanyController
+	var applicationController *controllers.ApplicationController
 
 	// Static Asset
 	app.Static(app_config.STATIC_PATH, app_config.STATIC_DIR)
@@ -46,6 +47,14 @@ func InitRoute(app *gin.Engine) {
 	companyRoute.POST("/", middleware.AuthAdmin, companyController.Store)
 	companyRoute.PATCH("/:id", middleware.AuthAdmin, companyController.Update)
 	companyRoute.DELETE("/:id", middleware.AuthAdmin, companyController.Destroy)
+
+	//Application Route
+	applicationRoute := api.Group("/applications")
+	applicationRoute.GET("/", applicationController.Index)
+	applicationRoute.GET("/:id", applicationController.Show)
+	applicationRoute.POST("/", middleware.AuthLogin, applicationController.Store)
+	applicationRoute.PATCH("/:id", middleware.AuthLogin, applicationController.Update)
+	applicationRoute.DELETE("/:id", middleware.AuthLogin, applicationController.Destroy)
 
 	// File routes
 	// fileRoute := api.Group("/file", middleware.AuthLogin) // Grouping routes with /file prefix and middleware

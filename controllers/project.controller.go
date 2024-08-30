@@ -57,16 +57,16 @@ func (e *ProjectController) Index(c *gin.Context) {
 	var response []map[string]interface{}
 	err := database.DB.Table("projects").
 		Select(`
-			projects.id, 
-			projects.project_title, 
-			projects.project_description, 
-			projects.job_type, 
-			projects.status,
-			roles.role_name,
-			companies.company_name, 
-			companies.company_description, 
-			companies.company_logo
-		`).
+		projects.id, 
+		projects.project_title, 
+		projects.project_description, 
+		projects.job_type, 
+		projects.status,
+		roles.role_name,
+		companies.company_name, 
+		companies.company_description, 
+		companies.company_logo
+	`).
 		Joins("JOIN companies ON projects.company_id = companies.id").
 		Joins("JOIN roles ON projects.role_id = roles.id").
 		Where("projects.status = ?", "open").
