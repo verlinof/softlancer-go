@@ -82,7 +82,6 @@ func (e *UserController) Login(c *gin.Context) {
 
 	// Compare the password
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(userReq.Password))
-
 	if err != nil {
 		errResponse = responses.ErrorResponse{
 			StatusCode: 400,
@@ -100,7 +99,6 @@ func (e *UserController) Login(c *gin.Context) {
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET_KEY")))
-
 	if err != nil {
 		errResponse = responses.ErrorResponse{
 			StatusCode: 500,
