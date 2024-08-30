@@ -36,25 +36,25 @@ The project structure follows a pattern inspired by Laravel to keep the applicat
 
 1. **Clone the repository**
 
-   ```bash
-   git clone https://github.com/yourusername/softlancer-api.git
+```bash
+git clone https://github.com/verlinof/softlancer-go.git
 
-   ```
+```
 
 2. Run Migrations
 
-```
+```bash
 go run cmd/database/migration.go
 ```
 
 3. Run the Application
 
-```
+```bash
 go run cmd/server/main.go
 ```
 
 Or
 
-```
+```bash
 go run github.com/pilu/fresh
 ```
