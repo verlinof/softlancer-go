@@ -22,6 +22,13 @@ func ApplicationOwner(c *gin.Context) {
 	}
 	var user models.User
 
+	// Get Token From Header
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
+		return
+	}
+
 	applicationId := c.Param("id")
 	parsedId, err := strconv.ParseUint(applicationId, 10, 64)
 	if err != nil {
@@ -36,19 +43,12 @@ func ApplicationOwner(c *gin.Context) {
 	//Find the application
 	var application models.Application
 	err = database.DB.Table("applications").Where("id = ?", parsedId).First(&application).Error
-	if parsedId == 0 && err != nil {
+	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 404,
 			Error:      "Application not found",
 		}
 		c.AbortWithStatusJSON(http.StatusNotFound, errResponse)
-		return
-	}
-
-	// Get Token From Header
-	authHeader := c.GetHeader("Authorization")
-	if authHeader == "" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
 		return
 	}
 

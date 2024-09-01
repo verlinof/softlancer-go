@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -140,7 +141,6 @@ func (e *ApplicationController) Store(c *gin.Context) {
 		ProjectID:      request.ProjectId,
 		CuriculumVitae: request.CuriculumVitae,
 		Portofolio:     request.Portofolio,
-		Status:         request.Status,
 	}
 
 	// Simpan project ke database
@@ -209,6 +209,72 @@ func (e *ApplicationController) Update(c *gin.Context) {
 
 	// Mencari data yang telah diupdate
 	database.DB.Table("applications").Where("id = ?", id).First(&application)
+
+	// Mengembalikan response sukses
+	successRes := responses.SuccessResponse{
+		Message: "Success Update Application",
+		Data: responses.ApplicationStoreResponse{
+			ID:             application.ID,
+			UserID:         application.UserID,
+			ProjectID:      application.ProjectID,
+			CuriculumVitae: application.CuriculumVitae,
+			Portofolio:     application.Portofolio,
+			Status:         application.Status,
+		},
+	}
+
+	c.JSON(http.StatusOK, successRes)
+}
+
+func (e *ApplicationController) UpdateStatus(c *gin.Context) {
+	var err error
+	var request requests.UpdateApplicationStatusRequest
+	var application models.Application
+
+	applicationId := c.Param("id")
+	parsedId, err := strconv.ParseUint(applicationId, 10, 64)
+	if err != nil {
+		errResponse := responses.ErrorResponse{
+			StatusCode: 500,
+			Error:      "Invalid ID",
+		}
+		c.AbortWithStatusJSON(http.StatusInternalServerError, errResponse)
+		return
+	}
+
+	//Find the application
+	err = database.DB.Table("applications").Where("id = ?", parsedId).First(&application).Error
+	if parsedId == 0 && err != nil {
+		errResponse := responses.ErrorResponse{
+			StatusCode: 404,
+			Error:      "Application not found",
+		}
+		c.AbortWithStatusJSON(http.StatusNotFound, errResponse)
+		return
+	}
+
+	// Bind request body ke struct ProjectRequest
+	if err = c.ShouldBind(&request); err != nil {
+		errResponse := responses.ErrorResponse{
+			StatusCode: 400,
+			Error:      "Invalid request body",
+		}
+		c.AbortWithStatusJSON(http.StatusBadRequest, errResponse)
+		return
+	}
+
+	// Simpan application ke database
+	if err = database.DB.Table("applications").Where("id = ?", parsedId).Updates(&request).Error; err != nil {
+		errResponse := responses.ErrorResponse{
+			StatusCode: 500,
+			Error:      err.Error(),
+		}
+		c.JSON(http.StatusInternalServerError, errResponse)
+		return
+	}
+
+	// Mencari data yang telah diupdate
+	database.DB.Table("applications").Where("id = ?", parsedId).First(&application)
 
 	// Mengembalikan response sukses
 	successRes := responses.SuccessResponse{

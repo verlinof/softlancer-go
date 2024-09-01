@@ -23,6 +23,11 @@ func ValidateCreateApplication(request *requests.CreateApplicationRequest) []str
 		validationErrors = append(validationErrors, "Curiculum Vitae is required")
 	}
 
+	return validationErrors
+}
+
+func ValidateUpdateStatusApplication(request *requests.UpdateApplicationStatusRequest) []string {
+	var validationErrors []string
 	validStatus := map[string]bool{
 		"waiting":  true,
 		"accepted": true,
