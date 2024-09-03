@@ -50,7 +50,7 @@ go run cmd/database/migration.go
 3. Run the Application
 
 ```bash
-go run cmd/server/main.go
+go run cmd/app/main.go
 ```
 
 Or
