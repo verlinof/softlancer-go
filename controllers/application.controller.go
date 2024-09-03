@@ -46,12 +46,10 @@ func (a *ApplicationController) Index(c *gin.Context) {
 		message = "Applications data is empty"
 	}
 
-	successRes := responses.SuccessResponse{
+	c.JSON(http.StatusOK, responses.SuccessResponse{
 		Message: message,
 		Data:    response,
-	}
-
-	c.JSON(http.StatusOK, successRes)
+	})
 }
 
 func (e *ApplicationController) Show(c *gin.Context) {
