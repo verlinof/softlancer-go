@@ -1,8 +1,8 @@
 .env
 
-tmp/
+/internal/tmp/
 
-/storage/*
+/internal/storage/*
 
 softlancer-go.exe
 softlancer-go.exe~
