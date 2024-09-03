@@ -53,9 +53,9 @@ func AuthLogin(c *gin.Context) {
 		}
 
 		// Check User
-		database.DB.First(&user, claims["sub"])
-		if user.ID == nil { // Assuming user.ID is of type uint or similar
-			c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
+		err := database.DB.Where("id = ?", claims["sub"]).First(&user).Error
+		if user.ID == "" { // Assuming user.ID is of type string
+			c.AbortWithStatusJSON(http.StatusUnauthorized, err.Error())
 			return
 		}
 
@@ -107,8 +107,8 @@ func AuthAdmin(c *gin.Context) {
 		}
 
 		// Check User
-		database.DB.First(&user, claims["sub"])
-		if user.ID == nil { // Assuming user.ID is of type uint or similar
+		database.DB.Where("id = ?", claims["sub"]).First(&user)
+		if user.ID == "" { // Assuming user.ID is of type uint or similar
 			c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
 			return
 		}

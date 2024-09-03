@@ -1,7 +1,7 @@
 package responses
 
 type ApplicationResponse struct {
-	ID             *uint64 `json:"id"`
+	ID             string  `json:"id"`
 	ProjectID      *uint64 `json:"project_id"`
 	ProjectTitle   string  `json:"project_title"`
 	RoleID         *uint64 `json:"role_id"`
@@ -12,8 +12,8 @@ type ApplicationResponse struct {
 }
 
 type ApplicationStoreResponse struct {
-	ID             *uint64 `json:"id"`
-	UserID         *uint64 `json:"user_id"`
+	ID             string  `json:"id"`
+	UserID         string  `json:"user_id"`
 	ProjectID      *uint64 `json:"project_id"`
 	CuriculumVitae string  `json:"curiculum_vitae"`
 	Portofolio     string  `json:"portofolio"`
@@ -21,10 +21,13 @@ type ApplicationStoreResponse struct {
 }
 
 type ApplicationDetailResponse struct {
-	ID                 *uint64 `json:"id"`
+	ID                 string  `json:"id"`
 	ProjectID          *uint64 `json:"project_id"`
 	ProjectTitle       string  `json:"project_title"`
 	ProjectDescription string  `json:"project_description"`
+	UserID             string  `json:"user_id"`
+	UserName           string  `json:"user_name"`
+	UserEmail          string  `json:"user_email"`
 	CompanyID          *uint64 `json:"company_id"`
 	CompanyName        string  `json:"company_name"`
 	CompanyDescription string  `json:"company_description"`

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -30,19 +29,10 @@ func ApplicationOwner(c *gin.Context) {
 	}
 
 	applicationId := c.Param("id")
-	parsedId, err := strconv.ParseUint(applicationId, 10, 64)
-	if err != nil {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 500,
-			Error:      "Invalid ID",
-		}
-		c.AbortWithStatusJSON(http.StatusInternalServerError, errResponse)
-		return
-	}
 
 	//Find the application
 	var application models.Application
-	err = database.DB.Table("applications").Where("id = ?", parsedId).First(&application).Error
+	err := database.DB.Table("applications").Where("id = ?", applicationId).First(&application).Error
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 404,
@@ -77,14 +67,14 @@ func ApplicationOwner(c *gin.Context) {
 		}
 
 		// Check User
-		database.DB.First(&user, claims["sub"])
-		if user.ID == nil { // Assuming user.ID is of type uint or similar
+		database.DB.Where("id = ?", claims["sub"]).First(&user)
+		if user.ID == "" { // Assuming user.ID is of type uint or similar
 			c.AbortWithStatusJSON(http.StatusUnauthorized, errResponse)
 			return
 		}
 
 		//Check is it valid user or no
-		if *application.UserID != *user.ID {
+		if application.UserID != user.ID {
 			errResponse := responses.ErrorResponse{
 				StatusCode: 401,
 				Error:      "Unauthorized",
@@ -95,7 +85,7 @@ func ApplicationOwner(c *gin.Context) {
 
 		// Set User To Context
 		c.Set("user", user.ID)
-		c.Set("application", parsedId)
+		c.Set("application", applicationId)
 		// Next
 		c.Next()
 	} else {

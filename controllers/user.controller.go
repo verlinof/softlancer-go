@@ -70,7 +70,7 @@ func (e *UserController) Login(c *gin.Context) {
 
 	// Find requested User
 	database.DB.Table("users").Where("email = ?", userReq.Email).First(&user)
-	if *user.ID == 0 {
+	if user.ID == "" {
 		errResponse = responses.ErrorResponse{
 			StatusCode: 400,
 			Error:      "Invalid Credentials",
@@ -193,10 +193,10 @@ func (e *UserController) Profile(c *gin.Context) {
 	}
 
 	var user models.User
-	if err := database.DB.First(&user, userId); err.Error != nil {
+	if err := database.DB.Where("id = ?", userId).First(&user).Error; err != nil {
 		errorResponse := responses.ErrorResponse{
 			StatusCode: 500,
-			Error:      "User not found",
+			Error:      err.Error(),
 		}
 		c.AbortWithStatusJSON(http.StatusInternalServerError, errorResponse)
 		return

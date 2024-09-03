@@ -35,7 +35,7 @@ func ValidateRegister(request *requests.UserRequest) []string {
 	//Check if the email already exist
 	userEmailExist := new(models.User)
 	database.DB.Table("users").Where("email = ?", request.Email).First(&userEmailExist)
-	if userEmailExist.ID != nil {
+	if userEmailExist.ID != "" {
 		validationErrors = append(validationErrors, "Email already exist")
 		return validationErrors
 	}
