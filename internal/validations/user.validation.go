@@ -3,9 +3,9 @@ package validations
 import (
 	"regexp"
 
-	"github.com/verlinof/softlancer-go/database"
-	"github.com/verlinof/softlancer-go/models"
-	"github.com/verlinof/softlancer-go/requests"
+	"github.com/verlinof/softlancer-go/internal/database"
+	"github.com/verlinof/softlancer-go/internal/models"
+	"github.com/verlinof/softlancer-go/internal/requests"
 )
 
 // Validation

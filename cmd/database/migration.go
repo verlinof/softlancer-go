@@ -4,10 +4,10 @@ import (
 	"log"
 
 	"github.com/joho/godotenv"
-	"github.com/verlinof/softlancer-go/config/app_config"
-	"github.com/verlinof/softlancer-go/config/db_config"
-	"github.com/verlinof/softlancer-go/database"
-	"github.com/verlinof/softlancer-go/models"
+	"github.com/verlinof/softlancer-go/internal/config/app_config"
+	"github.com/verlinof/softlancer-go/internal/config/db_config"
+	"github.com/verlinof/softlancer-go/internal/database"
+	"github.com/verlinof/softlancer-go/internal/models"
 )
 
 func init() {

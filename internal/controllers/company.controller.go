@@ -6,12 +6,12 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/verlinof/softlancer-go/database"
-	"github.com/verlinof/softlancer-go/models"
-	"github.com/verlinof/softlancer-go/requests"
-	"github.com/verlinof/softlancer-go/responses"
-	"github.com/verlinof/softlancer-go/utils"
-	"github.com/verlinof/softlancer-go/validations"
+	"github.com/verlinof/softlancer-go/internal/database"
+	"github.com/verlinof/softlancer-go/internal/models"
+	"github.com/verlinof/softlancer-go/internal/requests"
+	"github.com/verlinof/softlancer-go/internal/responses"
+	"github.com/verlinof/softlancer-go/internal/utils"
+	"github.com/verlinof/softlancer-go/internal/validations"
 )
 
 type CompanyController struct{}

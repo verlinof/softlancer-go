@@ -9,9 +9,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/verlinof/softlancer-go/database"
-	"github.com/verlinof/softlancer-go/models"
-	"github.com/verlinof/softlancer-go/responses"
+	"github.com/verlinof/softlancer-go/internal/database"
+	"github.com/verlinof/softlancer-go/internal/models"
+	"github.com/verlinof/softlancer-go/internal/responses"
 )
 
 func AuthLogin(c *gin.Context) {
