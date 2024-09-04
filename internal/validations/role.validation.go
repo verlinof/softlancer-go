@@ -15,7 +15,7 @@ func ValidateCreateRole(request *requests.RoleRequest) []string {
 		validationErrors = append(validationErrors, "Role name is required")
 	} else {
 		database.DB.First(&roleExisted, "role_name = ?", request.RoleName)
-		if roleExisted.ID != nil {
+		if roleExisted.ID != "" {
 			validationErrors = append(validationErrors, "Role name already exist")
 		}
 	}

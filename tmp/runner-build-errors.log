@@ -1,0 +1,2 @@
+# github.com/verlinof/softlancer-go/internal/controllers
+internal\controllers\company.controller.go:140:24: cannot use utils.PrefixBaseUrl(company.CompanyLogo) (value of type *string) as string value in assignment

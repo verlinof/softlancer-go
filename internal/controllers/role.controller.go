@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -41,17 +40,8 @@ func (e *RoleController) Show(c *gin.Context) {
 	var response models.Role
 
 	id := c.Param("id")
-	parsedId, err := strconv.ParseUint(id, 10, 64)
-	if err != nil {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 500,
-			Error:      "Invalid ID",
-		}
-		c.JSON(http.StatusBadRequest, errResponse)
-		return
-	}
 
-	err = database.DB.Table("roles").First(&response, parsedId).Error
+	err := database.DB.Table("roles").Where("id = ?", id).First(&response).Error
 	if err != nil && strings.Contains(err.Error(), "record not found") {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 404,
@@ -119,15 +109,6 @@ func (e *RoleController) Update(c *gin.Context) {
 	var role models.Role
 
 	id := c.Param("id")
-	parsedId, err := strconv.ParseUint(id, 10, 64)
-	if err != nil {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 500,
-			Error:      "Invalid ID",
-		}
-		c.JSON(http.StatusBadRequest, errResponse)
-		return
-	}
 
 	if err = c.ShouldBind(&request); err != nil {
 		errResponse := responses.ErrorResponse{
@@ -138,7 +119,7 @@ func (e *RoleController) Update(c *gin.Context) {
 		return
 	}
 
-	err = database.DB.Table("roles").First(&role, parsedId).Error
+	err = database.DB.Table("roles").Where("id = ?", id).First(&role).Error
 	if err != nil && strings.Contains(err.Error(), "record not found") {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 404,
@@ -181,17 +162,8 @@ func (e *RoleController) Destroy(c *gin.Context) {
 	var role models.Role
 
 	id := c.Param("id")
-	parsedId, err := strconv.ParseUint(id, 10, 64)
-	if err != nil {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 500,
-			Error:      "Invalid ID",
-		}
-		c.JSON(http.StatusBadRequest, errResponse)
-		return
-	}
 
-	err = database.DB.Table("roles").First(&role, parsedId).Error
+	err := database.DB.Table("roles").Where("id = ?", id).First(&role).Error
 	if err != nil && strings.Contains(err.Error(), "record not found") {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 404,

@@ -49,26 +49,26 @@ func ValidateCreateProject(request *requests.ProjectRequest) []string {
 	}
 
 	// =====Company ID=====
-	if request.CompanyId == 0 {
+	if request.CompanyId == "" {
 		validationErrors = append(validationErrors, "Company ID is required")
 	}
 
-	if (request.CompanyId) != 0 {
+	if (request.CompanyId) != "" {
 		company := new(models.Company)
 		database.DB.Table("companies").Where("id = ?", request.CompanyId).First(&company)
-		if company.ID == nil {
+		if company.ID == "" {
 			validationErrors = append(validationErrors, "Invalid company ID")
 		}
 	}
 
 	// =====Role ID=====
-	if request.RoleId == 0 {
+	if request.RoleId == "" {
 		validationErrors = append(validationErrors, "Role id is required")
 	}
-	if request.RoleId != 0 {
+	if request.RoleId != "" {
 		role := new(models.Role)
 		database.DB.Table("roles").Where("id = ?", request.RoleId).First(&role)
-		if role.ID == nil {
+		if role.ID == "" {
 			validationErrors = append(validationErrors, "Invalid role ID")
 		}
 	}
@@ -102,19 +102,19 @@ func ValidateUpdateProject(request *requests.ProjectRequest) []string {
 	}
 
 	// =====Company ID=====
-	if (request.CompanyId) != 0 {
+	if request.CompanyId != "" {
 		company := new(models.Company)
 		database.DB.Table("companies").Where("id = ?", request.CompanyId).First(&company)
-		if company.ID == nil {
+		if company.ID == "" {
 			validationErrors = append(validationErrors, "Invalid company ID")
 		}
 	}
 
 	// =====Role ID=====
-	if request.RoleId != 0 {
+	if request.RoleId != "" {
 		role := new(models.Role)
 		database.DB.Table("roles").Where("id = ?", request.RoleId).First(&role)
-		if role.ID == nil {
+		if role.ID == "" {
 			validationErrors = append(validationErrors, "Invalid role ID")
 		}
 	}

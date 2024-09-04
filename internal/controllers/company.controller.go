@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -58,36 +57,18 @@ func (e *CompanyController) Show(c *gin.Context) {
 	var companyRes responses.CompanyResponse
 
 	id := c.Param("id")
-	//Error Handling
-	parsedId, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 500,
-			Error:      "Invalid ID",
-		}
-		c.JSON(http.StatusInternalServerError, errResponse)
-		return
-	}
 
 	err = database.DB.Table("companies").
 		Select("id, company_name, company_description, company_logo").
-		Where("id = ?", parsedId).
-		Scan(&companyRes).Error
-	if err != nil {
+		Where("id = ?", id).
+		First(&companyRes).Error
+
+	if err != nil && strings.Contains(err.Error(), "record not found") {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
-			Error:      err.Error(),
-		}
-		c.JSON(http.StatusBadRequest, errResponse)
-		return
-	}
-
-	if companyRes.ID == nil {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 404,
 			Error:      "Company not found",
 		}
-		c.JSON(http.StatusNotFound, errResponse)
+		c.JSON(http.StatusBadRequest, errResponse)
 		return
 	}
 
@@ -156,6 +137,8 @@ func (e *CompanyController) Store(c *gin.Context) {
 		return
 	}
 
+	company.CompanyLogo = *utils.PrefixBaseUrl(company.CompanyLogo)
+
 	successRes := responses.SuccessResponse{
 		Message: "Success",
 		Data:    company,
@@ -171,18 +154,9 @@ func (e *CompanyController) Update(c *gin.Context) {
 	var oldCompany models.Company
 
 	id := c.Param("id")
-	parsedId, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 500,
-			Error:      "Invalid ID",
-		}
-		c.JSON(http.StatusInternalServerError, errResponse)
-		return
-	}
 
 	//Find the old data
-	err = database.DB.Table("companies").Where("id = ?", parsedId).First(&oldCompany).Error
+	err = database.DB.Table("companies").Where("id = ?", id).First(&oldCompany).Error
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 404,
@@ -224,14 +198,14 @@ func (e *CompanyController) Update(c *gin.Context) {
 	}
 
 	company = models.Company{
-		ID:                 &parsedId,
+		ID:                 id,
 		CompanyName:        companyReq.CompanyName,
 		CompanyDescription: companyReq.CompanyDescription,
 		CompanyLogo:        fileName,
 	}
 
 	// Update Company
-	err = database.DB.Table("companies").Where("id = ?", parsedId).Updates(&company).Error
+	err = database.DB.Table("companies").Where("id = ?", id).Updates(&company).Error
 	if err != nil {
 		utils.HandleRemoveFile(fileName)
 		errResponse := responses.ErrorResponse{
@@ -243,6 +217,8 @@ func (e *CompanyController) Update(c *gin.Context) {
 	}
 	defer utils.HandleRemoveFile(oldCompany.CompanyLogo)
 
+	company.CompanyLogo = *utils.PrefixBaseUrl(company.CompanyLogo)
+
 	successRes := responses.SuccessResponse{
 		Message: "Success",
 		Data:    company,
@@ -253,19 +229,10 @@ func (e *CompanyController) Update(c *gin.Context) {
 
 func (e *CompanyController) Destroy(c *gin.Context) {
 	id := c.Param("id")
-	parsedId, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 500,
-			Error:      "Invalid ID",
-		}
-		c.JSON(http.StatusInternalServerError, errResponse)
-		return
-	}
 
 	// Find the old data
 	var company models.Company
-	err = database.DB.Table("companies").Where("id = ?", parsedId).First(&company).Error
+	err := database.DB.Table("companies").Where("id = ?", id).First(&company).Error
 	if err != nil {
 		if strings.Contains(err.Error(), "record not found") {
 			errResponse := responses.ErrorResponse{
@@ -290,7 +257,7 @@ func (e *CompanyController) Destroy(c *gin.Context) {
 	}
 
 	// Delete the Company
-	err = database.DB.Table("companies").Where("id = ?", parsedId).Delete(&company).Error
+	err = database.DB.Table("companies").Where("id = ?", id).Delete(&company).Error
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,

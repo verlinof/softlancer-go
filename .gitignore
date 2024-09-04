@@ -2,7 +2,7 @@
 
 /internal/tmp/
 
-/internal/storage/*
+/storage/*
 
 softlancer-go.exe
 softlancer-go.exe~
