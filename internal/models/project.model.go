@@ -1,7 +1,12 @@
 package models
 
+import (
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
+
 type Project struct {
-	ID                 *uint64 `json:"id" gorm:"primaryKey"`
+	ID                 string `json:"id" gorm:"type:varchar(36);primaryKey"`
 	CompanyID          string
 	Company            Company `json:"company" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	RoleID             string
@@ -10,4 +15,9 @@ type Project struct {
 	ProjectDescription string `json:"project_description" gorm:"type:text;not null"`
 	JobType            string `json:"job_type" gorm:"type:enum('fulltime','parttime','freelance');not null"`
 	Status             string `json:"status" gorm:"type:enum('open','closed');not null"`
+}
+
+func (p *Project) BeforeCreate(tx *gorm.DB) (err error) {
+	p.ID = uuid.New().String()
+	return
 }

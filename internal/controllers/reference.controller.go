@@ -9,6 +9,7 @@ import (
 	"github.com/verlinof/softlancer-go/internal/models"
 	"github.com/verlinof/softlancer-go/internal/requests"
 	"github.com/verlinof/softlancer-go/internal/responses"
+	"github.com/verlinof/softlancer-go/internal/validations"
 )
 
 type ReferenceController struct{}
@@ -65,6 +66,16 @@ func (e *ReferenceController) Store(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
 			StatusCode: 400,
 			Error:      "Invalid request body",
+		})
+		return
+	}
+
+	//Validate
+	validationErr := validations.ValidateCreateReference(&request)
+	if len(validationErr) > 0 {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			StatusCode: 400,
+			Error:      validationErr,
 		})
 		return
 	}

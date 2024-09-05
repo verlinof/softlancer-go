@@ -9,6 +9,7 @@ import (
 	"github.com/verlinof/softlancer-go/internal/models"
 	"github.com/verlinof/softlancer-go/internal/requests"
 	"github.com/verlinof/softlancer-go/internal/responses"
+	"github.com/verlinof/softlancer-go/internal/utils"
 	"github.com/verlinof/softlancer-go/internal/validations"
 )
 
@@ -56,6 +57,7 @@ func (e *ApplicationController) Show(c *gin.Context) {
 
 	id := c.Param("id")
 	err := database.DB.Table("applications").
+		Joins("Join users ON applications.user_id = users.id").
 		Joins("JOIN projects ON applications.project_id = projects.id").
 		Joins("JOIN companies ON projects.company_id = companies.id").
 		Joins("JOIN roles ON projects.role_id = roles.id").
@@ -64,6 +66,9 @@ func (e *ApplicationController) Show(c *gin.Context) {
 			projects.id as project_id,
 			projects.project_title, 
 			projects.project_description,
+			users.id as user_id,
+			users.name as user_name,
+			users.email as user_email,
 			companies.id as company_id,
 			companies.company_name,
 			companies.company_description,
@@ -76,6 +81,8 @@ func (e *ApplicationController) Show(c *gin.Context) {
 		`).
 		Where("applications.id = ?", id).
 		First(&response).Error
+
+	response.CompanyLogo = *utils.PrefixBaseUrl(response.CompanyLogo)
 
 	if err != nil && strings.Contains(err.Error(), "not found") {
 		errResponse := responses.ErrorResponse{

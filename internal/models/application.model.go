@@ -9,7 +9,7 @@ type Application struct {
 	ID             string `json:"id" gorm:"type:varchar(36);primaryKey"`
 	UserID         string
 	User           User `json:"user" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	ProjectID      *uint64
+	ProjectID      string
 	Project        Project `json:"project" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	CuriculumVitae string  `json:"curiculum_vitae" gorm:"type:varchar(255);not null"`
 	Portofolio     string  `json:"portofolio" gorm:"type:varchar(255);not null"`

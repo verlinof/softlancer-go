@@ -9,12 +9,12 @@ import (
 func ValidateCreateApplication(request *requests.CreateApplicationRequest) []string {
 	var validationErrors []string
 
-	if request.ProjectId == nil {
+	if request.ProjectId == "" {
 		validationErrors = append(validationErrors, "Project ID is required")
 	} else {
 		project := new(models.Project)
-		database.DB.Table("projects").Where("id = ?", *request.ProjectId).First(&project)
-		if project.ID == nil {
+		database.DB.Table("projects").Where("id = ?", request.ProjectId).First(&project)
+		if project.ID == "" {
 			validationErrors = append(validationErrors, "Invalid project ID")
 		}
 	}

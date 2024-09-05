@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"net/http"
-	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/verlinof/softlancer-go/internal/database"
@@ -113,29 +113,20 @@ func (e *ProjectController) Show(c *gin.Context) {
 		Joins("JOIN companies ON projects.company_id = companies.id").
 		Joins("JOIN roles ON projects.role_id = roles.id").
 		Where("projects.id = ?", id).
-		Scan(&response).Error
+		First(&response).Error
 
-	if err != nil {
+	if err != nil && strings.Contains(err.Error(), "record not found") {
 		errResponse := responses.ErrorResponse{
-			StatusCode: 500,
-			Error:      err.Error(),
+			StatusCode: 404,
+			Error:      "Project not found",
 		}
 		c.JSON(http.StatusInternalServerError, errResponse)
 		return
 	}
 
-	if len(response) == 0 {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 404,
-			Error:      "Project not found",
-		}
-		c.JSON(http.StatusNotFound, errResponse)
-		return
-	}
-
 	successRes := responses.SuccessResponse{
 		Message: "Success",
-		Data:    response[0], // Mengambil hasil pertama dari slice sebagai response
+		Data:    response, // Mengambil hasil pertama dari slice sebagai response
 	}
 
 	c.JSON(http.StatusOK, successRes)
@@ -208,19 +199,9 @@ func (e *ProjectController) Update(c *gin.Context) {
 	var oldProject models.Project
 
 	id := c.Param("id")
-	// Mengisi model project berdasarkan projectReq
-	parsedId, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 500,
-			Error:      "Invalid ID",
-		}
-		c.JSON(http.StatusInternalServerError, errResponse)
-		return
-	}
 
 	//Find the old data
-	err = database.DB.Table("projects").Where("id = ?", parsedId).First(&oldProject).Error
+	err = database.DB.Table("projects").Where("id = ?", id).First(&oldProject).Error
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 404,
@@ -251,7 +232,7 @@ func (e *ProjectController) Update(c *gin.Context) {
 	}
 
 	// Simpan project ke database
-	if err = database.DB.Table("projects").Where("id = ?", parsedId).Updates(&projectReq).Error; err != nil {
+	if err = database.DB.Table("projects").Where("id = ?", id).Updates(&projectReq).Error; err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
 			Error:      err.Error(),
@@ -261,7 +242,7 @@ func (e *ProjectController) Update(c *gin.Context) {
 	}
 
 	// Mencari data yang telah diupdate
-	database.DB.Table("projects").Where("id = ?", parsedId).First(&project)
+	database.DB.Table("projects").Where("id = ?", id).First(&project)
 
 	// Mengembalikan response sukses
 	successRes := responses.SuccessResponse{
@@ -285,43 +266,22 @@ func (e *ProjectController) Destroy(c *gin.Context) {
 
 	id := c.Param("id")
 
-	// Mengisi model project berdasarkan projectReq
-	parsedId, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 500,
-			Error:      "Invalid ID",
-		}
-		c.JSON(http.StatusInternalServerError, errResponse)
-		return
-	}
-
 	// Cari project berdasarkan ID
 	err = database.DB.Table("projects").
-		Select("id, project_title, project_description, job_type, status").
 		Where("id = ?", id).
-		Scan(&projectRes).Error
+		First(&projectRes).Error
 
-	if err != nil {
+	if err != nil && strings.Contains(err.Error(), "record not found") {
 		errResponse := responses.ErrorResponse{
-			StatusCode: 500,
-			Error:      err.Error(),
+			StatusCode: 404,
+			Error:      "Project not found",
 		}
 		c.JSON(http.StatusBadRequest, errResponse)
 		return
 	}
 
-	if projectRes.ID == nil {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 404,
-			Error:      "Project not found",
-		}
-		c.JSON(http.StatusNotFound, errResponse)
-		return
-	}
-
 	//Delete the project
-	err = database.DB.Delete(&project, parsedId).Error
+	err = database.DB.Where("id = ?", id).Delete(&project).Error
 
 	if err != nil {
 		errResponse := responses.ErrorResponse{
