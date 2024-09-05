@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -35,18 +34,11 @@ func (e *ReferenceController) Index(c *gin.Context) {
 
 func (e *ReferenceController) Show(c *gin.Context) {
 	var response responses.ReferenceResponse
+	var err error
 
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 500,
-			Error:      "Invalid ID",
-		}
-		c.JSON(http.StatusBadRequest, errResponse)
-		return
-	}
+	id := c.Param("id")
 
-	err = database.DB.Table("references").First(&response, id).Error
+	err = database.DB.Table("references").Where("id = ?", id).First(&response).Error
 	if err != nil && strings.Contains(err.Error(), "record not found") {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
@@ -64,10 +56,11 @@ func (e *ReferenceController) Show(c *gin.Context) {
 
 func (e *ReferenceController) Store(c *gin.Context) {
 	var request requests.CreateReferenceRequest
+	var err error
 
 	userId, _ := c.Get("user")
 
-	err := c.ShouldBind(&request)
+	err = c.ShouldBind(&request)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
 			StatusCode: 400,
@@ -77,8 +70,8 @@ func (e *ReferenceController) Store(c *gin.Context) {
 	}
 
 	reference := models.Reference{
-		UserID: userId.(*uint64),
-		RoleID: *request.RoleID,
+		UserID: userId.(string),
+		RoleID: request.RoleID,
 	}
 
 	err = database.DB.Table("references").Create(&reference).Error
@@ -94,7 +87,7 @@ func (e *ReferenceController) Store(c *gin.Context) {
 		Message: "Success",
 		Data: responses.ReferenceResponse{
 			ID:     reference.ID,
-			UserID: *reference.UserID,
+			UserID: reference.UserID,
 			RoleID: reference.RoleID,
 		},
 	})
@@ -102,17 +95,11 @@ func (e *ReferenceController) Store(c *gin.Context) {
 
 func (e *ReferenceController) Destroy(c *gin.Context) {
 	var reference models.Reference
+	var err error
 
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			StatusCode: 400,
-			Error:      "Invalid ID",
-		})
-		return
-	}
+	id := c.Param("id")
 
-	err = database.DB.Table("references").First(&reference, id).Error
+	err = database.DB.Table("references").Where("id = ?", id).First(&reference).Error
 	if err != nil && strings.Contains(err.Error(), "record not found") {
 		c.JSON(http.StatusNotFound, responses.ErrorResponse{
 			StatusCode: 404,
@@ -121,7 +108,7 @@ func (e *ReferenceController) Destroy(c *gin.Context) {
 		return
 	}
 
-	err = database.DB.Table("references").Where("id = ?", id).Delete(reference).Error
+	err = database.DB.Table("references").Where("id = ?", id).Delete(&reference).Error
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
 			StatusCode: 500,
@@ -134,7 +121,7 @@ func (e *ReferenceController) Destroy(c *gin.Context) {
 		Message: "Success to delete reference",
 		Data: responses.ReferenceResponse{
 			ID:     reference.ID,
-			UserID: *reference.UserID,
+			UserID: reference.UserID,
 			RoleID: reference.RoleID,
 		},
 	})

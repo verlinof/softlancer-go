@@ -28,7 +28,7 @@ func (a *ApplicationController) Index(c *gin.Context) {
 		applications.curiculum_vitae,
 		applications.portofolio,
 		applications.status
-	`).
+		`).
 		Scan(&response).Error
 
 	if err != nil {

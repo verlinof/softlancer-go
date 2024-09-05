@@ -9,11 +9,11 @@ import (
 func ValidateCreateReference(request *requests.CreateReferenceRequest) []string {
 	var validationErrors []string
 
-	if request.RoleID == nil {
+	if request.RoleID == "" {
 		validationErrors = append(validationErrors, "Project ID is required")
 	} else {
 		project := new(models.Project)
-		database.DB.Table("projects").Where("id = ?", *request.RoleID).First(&project)
+		database.DB.Table("projects").Where("id = ?", request.RoleID).First(&project)
 		if project.ID == nil {
 			validationErrors = append(validationErrors, "Invalid project ID")
 		}
