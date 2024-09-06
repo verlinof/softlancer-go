@@ -3,8 +3,9 @@
 /tmp/*
 
 storage/*
+
 # Don't ignore the storage directory itself
-!storage/
+!storage
 
 # Allow tracking of .gitkeep (or any specific files you want in the storage directory)
 !storage/.gitkeep
