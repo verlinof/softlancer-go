@@ -2,7 +2,12 @@
 
 /tmp/*
 
-/storage/*
+storage/*
+# Don't ignore the storage directory itself
+!storage/
+
+# Allow tracking of .gitkeep (or any specific files you want in the storage directory)
+!storage/.gitkeep
 
 softlancer-go.exe
 softlancer-go.exe~
