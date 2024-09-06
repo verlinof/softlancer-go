@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/verlinof/softlancer-go/internal/config/app_config"
+	"github.com/verlinof/softlancer-go/config/app_config"
 	"github.com/verlinof/softlancer-go/internal/controllers"
 	"github.com/verlinof/softlancer-go/internal/middleware"
 )

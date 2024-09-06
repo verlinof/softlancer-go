@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/verlinof/softlancer-go/internal/config/app_config"
+	"github.com/verlinof/softlancer-go/config/app_config"
 	"github.com/verlinof/softlancer-go/internal/validations"
 )
 

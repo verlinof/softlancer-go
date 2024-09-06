@@ -3,7 +3,7 @@ package database
 import (
 	"log"
 
-	"github.com/verlinof/softlancer-go/internal/config/db_config"
+	"github.com/verlinof/softlancer-go/config/db_config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

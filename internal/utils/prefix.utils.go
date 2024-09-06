@@ -3,7 +3,7 @@ package utils
 import (
 	"fmt"
 
-	"github.com/verlinof/softlancer-go/internal/config/app_config"
+	"github.com/verlinof/softlancer-go/config/app_config"
 )
 
 func PrefixBaseUrl(path string) *string {
