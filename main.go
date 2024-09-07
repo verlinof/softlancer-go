@@ -28,7 +28,12 @@ func main() {
 	//Init GIN ENGINE
 	app := gin.Default()
 
+	//Init routes
 	routes.InitRoute(app)
 
-	app.Run(app_config.PORT)
+	//Run server
+	err = app.Run(app_config.PORT)
+	if err != nil {
+		log.Println(err.Error())
+	}
 }

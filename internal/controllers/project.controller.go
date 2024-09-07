@@ -9,10 +9,19 @@ import (
 	"github.com/verlinof/softlancer-go/internal/models"
 	"github.com/verlinof/softlancer-go/internal/requests"
 	"github.com/verlinof/softlancer-go/internal/responses"
+	"github.com/verlinof/softlancer-go/internal/services"
 	"github.com/verlinof/softlancer-go/internal/validations"
 )
 
-type ProjectController struct{}
+type ProjectController struct {
+	emailService *services.EmailService
+}
+
+func (e *ProjectController) Init() {
+	if e.emailService == nil {
+		e.emailService = services.NewEmailService()
+	}
+}
 
 func (e *ProjectController) IndexAdmin(c *gin.Context) {
 	var response []map[string]interface{}
@@ -176,6 +185,9 @@ func (e *ProjectController) Store(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, errResponse)
 		return
 	}
+
+	// Menjalankan perintah sendEmailJob
+	go e.emailService.SendEmail(project.RoleID, project.ProjectTitle)
 
 	// Mengembalikan response sukses
 	successRes := responses.SuccessResponse{
