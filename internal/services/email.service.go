@@ -6,7 +6,6 @@ import (
 	"net/smtp"
 	"os"
 	"sync"
-	"time"
 
 	"github.com/verlinof/softlancer-go/internal/database"
 	"github.com/verlinof/softlancer-go/internal/models"
@@ -16,6 +15,7 @@ import (
 type emailConfig struct {
 	SMTPHost    string
 	SMTPPort    string
+	MailName    string
 	SenderEmail string
 	Password    string
 	NumWorkers  int
@@ -33,6 +33,7 @@ func NewEmailService() *EmailService {
 		Config: emailConfig{
 			SMTPHost:    os.Getenv("MAIL_HOST"),
 			SMTPPort:    os.Getenv("MAIL_PORT"),
+			MailName:    os.Getenv("MAIL_FROM_NAME"),
 			SenderEmail: os.Getenv("MAIL_USERNAME"),
 			Password:    os.Getenv("MAIL_PASSWORD"),
 			NumWorkers:  3, // atau bisa ditetapkan secara dinamis
@@ -45,7 +46,7 @@ func NewEmailService() *EmailService {
 func (e *EmailService) sendEmailJob(job models.EmailJob) {
 	// Membuat header email termasuk subject
 	headers := make(map[string]string)
-	headers["From"] = e.Config.SenderEmail
+	headers["From"] = e.Config.MailName
 	headers["To"] = job.To
 	headers["Subject"] = job.Subject
 
@@ -55,9 +56,6 @@ func (e *EmailService) sendEmailJob(job models.EmailJob) {
 		message += fmt.Sprintf("%s: %s\r\n", k, v)
 	}
 	message += "\r\n" + job.Message
-
-	// Otorisasi SMTP
-	// auth := smtp.PlainAuth("", e.Config.SenderEmail, e.Config.Password, e.Config.SMTPHost)
 
 	// Kirim email
 	err := smtp.SendMail(e.Config.SMTPHost+":"+e.Config.SMTPPort, e.Config.Auth, e.Config.SenderEmail, []string{job.To}, []byte(message))
@@ -74,19 +72,18 @@ func (e *EmailService) emailWorker(id int, jobs <-chan models.EmailJob, wg *sync
 	for job := range jobs {
 		log.Printf("Worker %d: Sending email to %s", id, job.To)
 		e.sendEmailJob(job)
-		time.Sleep(3 * time.Second) // Simulasi waktu pemrosesan
 	}
 }
 
 // Fungsi untuk mengirim email berdasarkan project
-func (e *EmailService) SendEmail(roleId string, projectTitle string) (err error) {
+func (e *EmailService) SendEmail(roleId string, projectTitle string) {
 	// Daftar email yang akan dikirim
 	var emailList []map[string]interface{}
 	var emailData []models.EmailJob
 	// WaitGroup untuk menunggu semua emailWorker selesai
 	var wg sync.WaitGroup
 
-	err = database.DB.Table("users").
+	err := database.DB.Table("users").
 		Select(`
 			users.id,
 			users.email, 
@@ -97,38 +94,45 @@ func (e *EmailService) SendEmail(roleId string, projectTitle string) (err error)
 		Where("roles.id = ?", roleId).
 		Find(&emailList).Error
 
-	fmt.Printf("%v", emailList)
-
 	if err != nil {
-		return err
+		log.Printf("Failed to get email list: %v", err)
 	}
 
 	for _, email := range emailList {
+		message := fmt.Sprintf(`
+Job Sesuai Referensimu Telah Tersedia
+Hi %s,
+
+Kami berharap Anda dalam keadaan baik. Kami senang memberi tahu Anda bahwa ada pekerjaan baru yang sesuai dengan preferensi Anda yang telah tersedia di aplikasi SoftLancer!
+Kami mengundang Anda untuk segera memeriksa detail pekerjaan tersebut. Jangan lewatkan kesempatan ini untuk mengembangkan keterampilan Anda dan mendapatkan pengalaman berharga.
+
+Terima kasih telah menjadi bagian dari SoftLancer. Kami berharap dapat membantu Anda dalam perjalanan karir Anda.
+
+Salam Hormat,
+Tim Softlancer
+    `, email["email"])
+
 		emailData = append(emailData, models.EmailJob{
 			To:      email["email"].(string),
 			Subject: "Softlancer New Project",
-			Message: fmt.Sprintf("New project: %s", projectTitle),
+			Message: message,
 		})
 	}
 
 	// Channel untuk menampung email job
 	jobs := make(chan models.EmailJob, len(emailList))
-
-	// Mulai emailWorker pool
 	for i := 1; i <= e.Config.NumWorkers; i++ {
 		wg.Add(1)
 		go e.emailWorker(i, jobs, &wg)
 	}
-
-	// Masukkan email ke dalam job queue
 	for _, job := range emailData {
 		jobs <- job
 	}
+
 	// Tutup channel jobs (semua job sudah dimasukkan)
 	close(jobs)
 	// Tunggu semua emailWorker selesai
 	wg.Wait()
 
 	log.Printf("Email sent to %d users successfully", len(emailList))
-	return nil
 }

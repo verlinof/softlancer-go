@@ -34,17 +34,12 @@ func ValidateCreateProject(request *requests.ProjectRequest) []string {
 		validationErrors = append(validationErrors, "Invalid job type. Allowed values are: fulltime, parttime, freelance")
 	}
 
-	// =====Status=====
-	if request.Status == "" {
-		validationErrors = append(validationErrors, "Status is required")
-	}
-
 	validStatus := map[string]bool{
 		"open":   true,
 		"closed": true,
 	}
 
-	if !validStatus[request.Status] {
+	if request.Status != "" && !validStatus[request.Status] {
 		validationErrors = append(validationErrors, "Invalid status. Allowed values are: open, closed")
 	}
 
