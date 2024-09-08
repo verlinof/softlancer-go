@@ -11,17 +11,24 @@ import (
 	"github.com/verlinof/softlancer-go/internal/models"
 	"github.com/verlinof/softlancer-go/internal/requests"
 	"github.com/verlinof/softlancer-go/internal/responses"
+	"github.com/verlinof/softlancer-go/internal/services"
 	"github.com/verlinof/softlancer-go/internal/validations"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserController struct{}
+type UserController struct {
+	Service *services.UserService
+}
+
+func (e *UserController) Init() {
+	if e.Service == nil {
+		e.Service = services.NewUserService()
+	}
+}
 
 func (e *UserController) Index(c *gin.Context) {
 	var userRes []responses.UserResponse
-	err := database.DB.Table("users").
-		Select("id, email, name, address").
-		Scan(&userRes).Error
+	userRes, err := e.Service.GetUsers(c.Request.Context())
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
@@ -31,12 +38,10 @@ func (e *UserController) Index(c *gin.Context) {
 		return
 	}
 
-	successRes := responses.SuccessResponse{
+	c.JSON(http.StatusOK, responses.SuccessResponse{
 		Message: "Success",
 		Data:    userRes,
-	}
-
-	c.JSON(http.StatusOK, successRes)
+	})
 }
 
 func (e *UserController) Login(c *gin.Context) {
@@ -45,19 +50,17 @@ func (e *UserController) Login(c *gin.Context) {
 	var errResponse responses.ErrorResponse
 
 	// Get the email and pass from req body
-	if err := (c.ShouldBind(&userReq)); err != nil {
+	if err := c.ShouldBind(&userReq); err != nil {
 		errResponse = responses.ErrorResponse{
 			StatusCode: 400,
-			Error:      err.Error(),
+			Error:      "Invalid Request Body",
 		}
-
 		c.AbortWithStatusJSON(http.StatusBadRequest, errResponse)
 		return
 	}
 
 	// Validate user input
 	validationErr := validations.ValidateLogin(&userReq)
-
 	if len(validationErr) > 0 {
 		errResponse = responses.ErrorResponse{
 			StatusCode: 400,
@@ -87,7 +90,6 @@ func (e *UserController) Login(c *gin.Context) {
 			StatusCode: 400,
 			Error:      "Invalid Credential",
 		}
-
 		c.AbortWithStatusJSON(http.StatusBadRequest, errResponse)
 		return
 	}
@@ -104,17 +106,14 @@ func (e *UserController) Login(c *gin.Context) {
 			StatusCode: 500,
 			Error:      "Failed to create token",
 		}
-
 		c.AbortWithStatusJSON(http.StatusInternalServerError, errResponse)
 		return
 	}
 
-	successResponse := responses.LoginResponse{
+	c.JSON(http.StatusOK, responses.LoginResponse{
 		Message: "Success",
 		Token:   tokenString,
-	}
-
-	c.JSON(http.StatusOK, successResponse)
+	})
 }
 
 func (e *UserController) Register(c *gin.Context) {
@@ -122,10 +121,10 @@ func (e *UserController) Register(c *gin.Context) {
 	userReq := new(requests.UserRequest)
 
 	//Input validation
-	if errReq := c.ShouldBind(&userReq); errReq != nil { //ini auto buat bind ataupun postform
+	if err := c.ShouldBind(&userReq); err != nil { //ini auto buat bind ataupun postform
 		errorResponse := responses.ErrorResponse{
 			StatusCode: 400,
-			Error:      errReq.Error(),
+			Error:      "Invalid request body",
 		}
 
 		c.JSON(http.StatusBadRequest, errorResponse)
@@ -156,7 +155,6 @@ func (e *UserController) Register(c *gin.Context) {
 	}
 
 	err = database.DB.Create(&user).Error
-
 	if err != nil {
 		errorResponse := responses.ErrorResponse{
 			StatusCode: 500,
@@ -167,7 +165,7 @@ func (e *UserController) Register(c *gin.Context) {
 	}
 
 	//Create User Response
-	successResponse := responses.SuccessResponse{
+	c.JSON(http.StatusOK, responses.SuccessResponse{
 		Message: "Success",
 		Data: responses.UserResponse{
 			ID:      user.ID,
@@ -175,14 +173,14 @@ func (e *UserController) Register(c *gin.Context) {
 			Address: user.Address,
 			Email:   user.Email,
 		},
-	}
-
-	c.JSON(http.StatusOK, successResponse)
+	})
 }
 
 func (e *UserController) Profile(c *gin.Context) {
 	//Get User id from Middleware
 	userId, exists := c.Get("user")
+	var user models.User
+
 	if !exists {
 		errorResponse := responses.ErrorResponse{
 			StatusCode: 500,
@@ -192,17 +190,16 @@ func (e *UserController) Profile(c *gin.Context) {
 		return
 	}
 
-	var user models.User
 	if err := database.DB.Where("id = ?", userId).First(&user).Error; err != nil {
 		errorResponse := responses.ErrorResponse{
 			StatusCode: 500,
-			Error:      err.Error(),
+			Error:      "Internal Server Error",
 		}
 		c.AbortWithStatusJSON(http.StatusInternalServerError, errorResponse)
 		return
 	}
 
-	successReponse := responses.SuccessResponse{
+	c.JSON(http.StatusOK, responses.SuccessResponse{
 		Message: "Success to get user profile",
 		Data: responses.UserResponse{
 			ID:      user.ID,
@@ -210,7 +207,5 @@ func (e *UserController) Profile(c *gin.Context) {
 			Address: user.Address,
 			Email:   user.Email,
 		},
-	}
-
-	c.JSON(http.StatusOK, successReponse)
+	})
 }

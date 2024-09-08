@@ -42,39 +42,6 @@ func NewEmailService() *EmailService {
 	}
 }
 
-// Fungsi untuk mengirim email
-func (e *EmailService) sendEmailJob(job models.EmailJob) {
-	// Membuat header email termasuk subject
-	headers := make(map[string]string)
-	headers["From"] = e.Config.MailName
-	headers["To"] = job.To
-	headers["Subject"] = job.Subject
-
-	// Membuat format email dengan header dan body
-	message := ""
-	for k, v := range headers {
-		message += fmt.Sprintf("%s: %s\r\n", k, v)
-	}
-	message += "\r\n" + job.Message
-
-	// Kirim email
-	err := smtp.SendMail(e.Config.SMTPHost+":"+e.Config.SMTPPort, e.Config.Auth, e.Config.SenderEmail, []string{job.To}, []byte(message))
-	if err != nil {
-		log.Printf("Failed to send email to %s: %v", job.To, err)
-		return
-	}
-	log.Printf("Email sent to %s successfully", job.To)
-}
-
-// Worker untuk memproses email secara paralel
-func (e *EmailService) emailWorker(id int, jobs <-chan models.EmailJob, wg *sync.WaitGroup) {
-	defer wg.Done()
-	for job := range jobs {
-		log.Printf("Worker %d: Sending email to %s", id, job.To)
-		e.sendEmailJob(job)
-	}
-}
-
 // Fungsi untuk mengirim email berdasarkan project
 func (e *EmailService) SendEmail(roleId string, projectTitle string) {
 	// Daftar email yang akan dikirim
@@ -135,4 +102,37 @@ Tim Softlancer
 	wg.Wait()
 
 	log.Printf("Email sent to %d users successfully", len(emailList))
+}
+
+// Fungsi untuk mengirim email
+func (e *EmailService) sendEmailJob(job models.EmailJob) {
+	// Membuat header email termasuk subject
+	headers := make(map[string]string)
+	headers["From"] = e.Config.MailName
+	headers["To"] = job.To
+	headers["Subject"] = job.Subject
+
+	// Membuat format email dengan header dan body
+	message := ""
+	for k, v := range headers {
+		message += fmt.Sprintf("%s: %s\r\n", k, v)
+	}
+	message += "\r\n" + job.Message
+
+	// Kirim email
+	err := smtp.SendMail(e.Config.SMTPHost+":"+e.Config.SMTPPort, e.Config.Auth, e.Config.SenderEmail, []string{job.To}, []byte(message))
+	if err != nil {
+		log.Printf("Failed to send email to %s: %v", job.To, err)
+		return
+	}
+	log.Printf("Email sent to %s successfully", job.To)
+}
+
+// Worker untuk memproses email secara paralel
+func (e *EmailService) emailWorker(id int, jobs <-chan models.EmailJob, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for job := range jobs {
+		log.Printf("Worker %d: Sending email to %s", id, job.To)
+		e.sendEmailJob(job)
+	}
 }
