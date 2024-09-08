@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -15,6 +17,7 @@ type Project struct {
 	ProjectDescription string `json:"project_description" gorm:"type:text;not null"`
 	JobType            string `json:"job_type" gorm:"type:enum('fulltime','parttime','freelance');not null"`
 	Status             string `json:"status" gorm:"type:enum('open','closed');default:'open';not null"`
+	CreatedAt          time.Time
 }
 
 func (p *Project) BeforeCreate(tx *gorm.DB) (err error) {

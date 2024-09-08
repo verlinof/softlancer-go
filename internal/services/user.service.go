@@ -13,7 +13,7 @@ func NewUserService() *UserService {
 	return &UserService{}
 }
 
-func (u *UserService) GetUsers(ctx context.Context) ([]responses.UserResponse, error) {
+func (u *UserService) GetUsers(ctx context.Context) (*[]responses.UserResponse, error) {
 	var userRes []responses.UserResponse
 	err := database.DB.WithContext(ctx).Table("users").
 		Select("id, email, name, address").
@@ -22,7 +22,7 @@ func (u *UserService) GetUsers(ctx context.Context) ([]responses.UserResponse, e
 	if err != nil {
 		return nil, err
 	}
-	return userRes, nil
+	return &userRes, nil
 }
 
 // func (u *UserService) CreateUser(ctx context.Context, user *models.User) (*responses.UserResponse, error) {

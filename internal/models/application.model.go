@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -14,6 +16,7 @@ type Application struct {
 	CuriculumVitae string  `json:"curiculum_vitae" gorm:"type:varchar(255);not null"`
 	Portofolio     string  `json:"portofolio" gorm:"type:varchar(255);not null"`
 	Status         string  `json:"status" gorm:"default:'waiting';type:enum('waiting','accepted','rejected');not null"`
+	CreatedAt      time.Time
 }
 
 func (application *Application) BeforeCreate(tx *gorm.DB) (err error) {

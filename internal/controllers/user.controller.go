@@ -27,7 +27,7 @@ func (e *UserController) Init() {
 }
 
 func (e *UserController) Index(c *gin.Context) {
-	var userRes []responses.UserResponse
+	var userRes *[]responses.UserResponse
 	userRes, err := e.Service.GetUsers(c.Request.Context())
 	if err != nil {
 		errResponse := responses.ErrorResponse{
