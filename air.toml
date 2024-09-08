@@ -1,0 +1,20 @@
+# Config file for Air
+
+[build]
+  # Working directory
+  bin = "tmp"
+  cmd = "go run cmd/server/main.go"
+  full_bin = "./tmp"
+
+  # Delay before running the build command (in milliseconds)
+  delay = 1000
+
+  # List of file extensions to watch
+  include_ext = ["go", "env"]
+
+  # Exclude these files and directories
+  exclude_dir = ["assets", "bin", "tmp"]
+
+[log]
+  # Log file
+  output = "stdout"
