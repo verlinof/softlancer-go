@@ -56,11 +56,5 @@ go run cmd/app/main.go
 Or
 
 ```bash
-go run github.com/pilu/fresh
-```
-
-Or
-
-```bash
 air
 ```
