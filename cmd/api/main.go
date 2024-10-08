@@ -39,7 +39,15 @@ func main() {
 		MaxAge:           12 * time.Hour, // How long preflight requests can be cached
 	}))
 
+	//Initiate Routes
 	routes.InitRoute(app)
 
+	//Use HTTP
 	app.Run(app_config.PORT)
+
+	//Use TLS for HTTPS
+	// err = app.RunTLS(app_config.PORT, app_config.APP_DIR+"cert.pem", app_config.APP_DIR+"key.pem")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 }

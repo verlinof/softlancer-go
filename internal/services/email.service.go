@@ -101,7 +101,7 @@ Tim Softlancer
 	// Tunggu semua emailWorker selesai
 	wg.Wait()
 
-	log.Printf("Email sent to %d users successfully", len(emailList))
+	fmt.Println(e.Config.SMTPHost, e.Config.SMTPPort, e.Config.MailName, e.Config.SenderEmail, e.Config.Password, e.Config.NumWorkers, e.Config.Auth)
 }
 
 // Fungsi untuk mengirim email
