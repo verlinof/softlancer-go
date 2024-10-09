@@ -32,12 +32,4 @@ func main() {
 	} else {
 		log.Println("Tables dropped successfully.")
 	}
-
-	// Migrate the schema
-	err = database.DB.AutoMigrate(&models.User{}, &models.Company{}, &models.Project{}, &models.Role{}, &models.Reference{}, &models.Application{})
-	if err != nil {
-		log.Println("Error migrating schema: ", err.Error())
-	} else {
-		log.Println("Migration complete!")
-	}
 }

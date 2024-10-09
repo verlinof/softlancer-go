@@ -44,13 +44,19 @@ git clone https://github.com/verlinof/softlancer-go.git
 2. Run Migrations
 
 ```bash
-go run cmd/database/migration.go
+go run cmd/migration/main.go
+```
+
+if you want to revert the migration just write this
+
+```bash
+go run cmd/migration/down/main.go
 ```
 
 3. Run the Application
 
 ```bash
-go run cmd/app/main.go
+go run cmd/api/main.go
 ```
 
 Or
