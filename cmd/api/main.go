@@ -14,6 +14,8 @@ import (
 )
 
 func main() {
+	gin.SetMode(app_config.GIN_MODE)
+
 	//Load .env file
 	err := godotenv.Load("./.env")
 	if err != nil {
@@ -21,8 +23,8 @@ func main() {
 	}
 
 	//Load config
-	app_config.InitAppConfig()
-	db_config.InitDatabaseConfig()
+	app_config.Init()
+	db_config.Init()
 
 	//Load database
 	database.ConnectDatabase()
@@ -44,10 +46,4 @@ func main() {
 
 	//Use HTTP
 	app.Run(app_config.PORT)
-
-	//Use TLS for HTTPS
-	// err = app.RunTLS(app_config.PORT, app_config.APP_DIR+"cert.pem", app_config.APP_DIR+"key.pem")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
 }

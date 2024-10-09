@@ -125,7 +125,6 @@ func (e *EmailService) sendEmailJob(job models.EmailJob) {
 		log.Printf("Failed to send email to %s: %v", job.To, err)
 		return
 	}
-	log.Printf("Email sent to %s successfully", job.To)
 }
 
 // Worker untuk memproses email secara paralel

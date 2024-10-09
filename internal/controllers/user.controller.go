@@ -60,11 +60,10 @@ func (e *UserController) Login(c *gin.Context) {
 	}
 
 	// Validate user input
-	validationErr := validations.ValidateLogin(&userReq)
-	if len(validationErr) > 0 {
+	if err := validations.ValidateLogin(&userReq); err != nil {
 		errResponse = responses.ErrorResponse{
 			StatusCode: 400,
-			Error:      validationErr,
+			Error:      err.Error(),
 		}
 
 		c.AbortWithStatusJSON(http.StatusBadRequest, errResponse)

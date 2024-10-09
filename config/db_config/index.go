@@ -9,7 +9,7 @@ var DB_USER = "root"
 var DB_PASSWORD = ""
 var DB_NAME = "softlancer"
 
-func InitDatabaseConfig() {
+func Init() {
 	driverEnv := os.Getenv("DB_DRIVER")
 	if driverEnv != "" {
 		DB_DRIVER = driverEnv

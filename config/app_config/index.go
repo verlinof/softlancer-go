@@ -2,13 +2,19 @@ package app_config
 
 import "os"
 
+var GIN_MODE = "debug"
 var PORT = ":8000"
 var BASE_URL = "http://localhost:8000"
 var APP_DIR = "./"
 var STATIC_PATH = "/storage"
 var STATIC_DIR = "./storage"
 
-func InitAppConfig() {
+func Init() {
+	ginModeEnv := os.Getenv("GIN_MODE")
+	if ginModeEnv != "" {
+		GIN_MODE = ginModeEnv
+	}
+
 	portEnv := os.Getenv("APP_PORT")
 	if portEnv != "" {
 		PORT = portEnv

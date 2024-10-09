@@ -1,8 +1,6 @@
 package database
 
 import (
-	"log"
-
 	"github.com/verlinof/softlancer-go/config/db_config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -24,6 +22,4 @@ func ConnectDatabase() {
 	if err != nil {
 		panic(err)
 	}
-
-	log.Println("Database connected!")
 }

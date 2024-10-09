@@ -17,8 +17,8 @@ func init() {
 	}
 
 	// Init config
-	app_config.InitAppConfig()
-	db_config.InitDatabaseConfig()
+	app_config.Init()
+	db_config.Init()
 
 	// Database connection
 	database.ConnectDatabase()
