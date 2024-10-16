@@ -53,7 +53,13 @@ if you want to revert the migration just write this
 go run cmd/migration/down/main.go
 ```
 
-3. Run the Application
+3. Run Seeders (if needed)
+
+```bash
+go run cmd/seeders/main.go
+```
+
+4. Run the Application
 
 ```bash
 go run cmd/api/main.go
