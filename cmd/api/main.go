@@ -14,8 +14,6 @@ import (
 )
 
 func main() {
-	gin.SetMode(app_config.GIN_MODE)
-
 	//Load .env file
 	err := godotenv.Load("./.env")
 	if err != nil {
@@ -30,6 +28,7 @@ func main() {
 	database.ConnectDatabase()
 
 	//Init GIN ENGINE
+	gin.SetMode(app_config.GIN_MODE)
 	app := gin.Default()
 
 	app.Use(cors.New(cors.Config{

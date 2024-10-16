@@ -109,7 +109,7 @@ func (e *CompanyController) Store(c *gin.Context) {
 	}
 
 	// Upload File
-	fileName, err := utils.HandleUploadFile(c, "company_logo", []string{"image/png", "image/jpeg", "image/jpg"}, 10000)
+	fileName, err := utils.HandleUploadFile(c, "companies", "company_logo", []string{"image/png", "image/jpeg", "image/jpg"}, 10000)
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
@@ -187,7 +187,7 @@ func (e *CompanyController) Update(c *gin.Context) {
 	}
 
 	// Upload File
-	fileName, err := utils.HandleUploadFile(c, "company_logo", []string{"image/png", "image/jpeg", "image/jpg"}, 10000)
+	fileName, err := utils.HandleUploadFile(c, "companies", "company_logo", []string{"image/png", "image/jpeg", "image/jpg"}, 10000)
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,

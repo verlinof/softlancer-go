@@ -11,7 +11,7 @@ import (
 	"github.com/verlinof/softlancer-go/internal/validations"
 )
 
-func HandleUploadFile(c *gin.Context, form string, fileType []string, maxSize int) (string, error) {
+func HandleUploadFile(c *gin.Context, folderName string, form string, fileType []string, maxSize int) (string, error) {
 	fileHeader, _ := c.FormFile(form)
 
 	if fileHeader == nil {
@@ -37,7 +37,7 @@ func HandleUploadFile(c *gin.Context, form string, fileType []string, maxSize in
 	//Akan mengembalikan path file
 	extensionFile := filepath.Ext(fileHeader.Filename)
 	filename := uuid.New().String() + extensionFile
-	errUpload := c.SaveUploadedFile(fileHeader, fmt.Sprintf(app_config.STATIC_DIR+"/%s", filename))
+	errUpload := c.SaveUploadedFile(fileHeader, fmt.Sprintf(app_config.STATIC_DIR+"/%s/%s", folderName, filename))
 	if errUpload != nil {
 		c.JSON(500, gin.H{
 			"message": errUpload.Error(),
@@ -46,7 +46,7 @@ func HandleUploadFile(c *gin.Context, form string, fileType []string, maxSize in
 	}
 
 	// return filename
-	pathFile := fmt.Sprintf(app_config.STATIC_PATH+"/%s", filename)
+	pathFile := fmt.Sprintf(app_config.STATIC_PATH+"/%s/%s", folderName, filename)
 
 	return pathFile, nil
 }

@@ -20,9 +20,9 @@ type UserController struct {
 	Service *services.UserService
 }
 
-func (e *UserController) Init() {
-	if e.Service == nil {
-		e.Service = services.NewUserService()
+func NewUserController() *UserController {
+	return &UserController{
+		Service: services.NewUserService(),
 	}
 }
 

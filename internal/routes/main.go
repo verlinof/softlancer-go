@@ -9,9 +9,7 @@ import (
 
 func InitRoute(app *gin.Engine) {
 	//Controller
-	userController := &controllers.UserController{}
-	userController.Init()
-
+	userController := controllers.NewUserController()
 	projectController := &controllers.ProjectController{}
 	projectController.Init()
 

@@ -22,6 +22,7 @@ func (u *UserService) GetUsers(ctx context.Context) (*[]responses.UserResponse, 
 	if err != nil {
 		return nil, err
 	}
+
 	return &userRes, nil
 }
 
