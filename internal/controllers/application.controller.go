@@ -9,8 +9,8 @@ import (
 	"github.com/verlinof/softlancer-go/internal/models"
 	"github.com/verlinof/softlancer-go/internal/requests"
 	"github.com/verlinof/softlancer-go/internal/responses"
-	"github.com/verlinof/softlancer-go/internal/utils"
 	"github.com/verlinof/softlancer-go/internal/validations"
+	"github.com/verlinof/softlancer-go/pkg"
 )
 
 type ApplicationController struct{}
@@ -82,7 +82,7 @@ func (e *ApplicationController) Show(c *gin.Context) {
 		Where("applications.id = ?", id).
 		First(&response).Error
 
-	response.CompanyLogo = *utils.PrefixBaseUrl(response.CompanyLogo)
+	response.CompanyLogo = *pkg.PrefixBaseUrl(response.CompanyLogo)
 
 	if err != nil && strings.Contains(err.Error(), "not found") {
 		errResponse := responses.ErrorResponse{

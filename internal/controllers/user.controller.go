@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/verlinof/softlancer-go/internal/database"
 	"github.com/verlinof/softlancer-go/internal/models"
 	"github.com/verlinof/softlancer-go/internal/requests"
 	"github.com/verlinof/softlancer-go/internal/responses"
@@ -17,18 +16,29 @@ import (
 )
 
 type UserController struct {
-	Service *services.UserService
+	UserService *services.UserService
 }
 
 func NewUserController() *UserController {
 	return &UserController{
-		Service: services.NewUserService(),
+		UserService: services.NewUserService(),
 	}
 }
 
+// Index return all user data
+//
+// @Summary Get all user data
+// @ID get-all-user
+// @Tags User
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} responses.SuccessResponse{data=[]responses.UserResponse}
+// @Failure 400 {object} responses.ErrorResponse
+// @Failure 500 {object} responses.ErrorResponse
+// @Router /users [get]
 func (e *UserController) Index(c *gin.Context) {
-	var userRes *[]responses.UserResponse
-	userRes, err := e.Service.GetUsers(c.Request.Context())
+	var userRes []responses.UserResponse
+	users, err := e.UserService.GetUsers(c.Request.Context())
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
@@ -38,12 +48,31 @@ func (e *UserController) Index(c *gin.Context) {
 		return
 	}
 
+	//Insert data to userRes
+	for _, user := range *users {
+		userRes = append(userRes, responses.UserResponse{
+			ID:      user.ID,
+			Name:    user.Name,
+			Address: user.Address,
+			Email:   user.Email,
+		})
+	}
+
 	c.JSON(http.StatusOK, responses.SuccessResponse{
 		Message: "Success",
 		Data:    userRes,
 	})
 }
 
+// Login user using email and password
+// It will return JWT token if the input is valid
+// The token will be expired in 7 days
+// The response will be in this format :
+//
+//	{
+//	  "message": "Success",
+//	  "token": "your-jwt-token"
+//	}
 func (e *UserController) Login(c *gin.Context) {
 	var userReq requests.LoginRequest
 	var user *models.User
@@ -71,7 +100,7 @@ func (e *UserController) Login(c *gin.Context) {
 	}
 
 	// Find requested User
-	database.DB.Table("users").Where("email = ?", userReq.Email).First(&user)
+	user, err := e.UserService.GetUserbyEmail(c.Request.Context(), userReq.Email)
 	if user.ID == "" {
 		errResponse = responses.ErrorResponse{
 			StatusCode: 400,
@@ -82,8 +111,17 @@ func (e *UserController) Login(c *gin.Context) {
 		return
 	}
 
+	if err != nil {
+		errResponse = responses.ErrorResponse{
+			StatusCode: 500,
+			Error:      "Internal Server Error",
+		}
+		c.AbortWithStatusJSON(http.StatusInternalServerError, errResponse)
+		return
+	}
+
 	// Compare the password
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(userReq.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(userReq.Password))
 	if err != nil {
 		errResponse = responses.ErrorResponse{
 			StatusCode: 400,
@@ -115,6 +153,18 @@ func (e *UserController) Login(c *gin.Context) {
 	})
 }
 
+// Register new user
+//
+// @Summary Register new user
+// @ID register-new-user
+// @Tags User
+// @Accept  json
+// @Produce  json
+// @Param request body requests.UserRequest true "Register new user request body"
+// @Success 200 {object} responses.SuccessResponse{data=responses.UserResponse}
+// @Failure 400 {object} responses.ErrorResponse
+// @Failure 500 {object} responses.ErrorResponse
+// @Router /register [post]
 func (e *UserController) Register(c *gin.Context) {
 	var err error
 	userReq := new(requests.UserRequest)
@@ -146,14 +196,14 @@ func (e *UserController) Register(c *gin.Context) {
 	hashedPasswordStr := string(hashedPassword)
 
 	//Create User
-	user := models.User{
+	user := &models.User{
 		Name:     userReq.Name,
 		Address:  userReq.Address,
 		Email:    userReq.Email,
 		Password: hashedPasswordStr,
 	}
 
-	err = database.DB.Create(&user).Error
+	user, err = e.UserService.CreateUser(c.Request.Context(), user)
 	if err != nil {
 		errorResponse := responses.ErrorResponse{
 			StatusCode: 500,
@@ -178,8 +228,7 @@ func (e *UserController) Register(c *gin.Context) {
 func (e *UserController) Profile(c *gin.Context) {
 	//Get User id from Middleware
 	userId, exists := c.Get("user")
-	var user models.User
-
+	var user *models.User
 	if !exists {
 		errorResponse := responses.ErrorResponse{
 			StatusCode: 500,
@@ -189,7 +238,8 @@ func (e *UserController) Profile(c *gin.Context) {
 		return
 	}
 
-	if err := database.DB.Where("id = ?", userId).First(&user).Error; err != nil {
+	user, err := e.UserService.GetUserbyID(c.Request.Context(), userId.(string))
+	if err != nil {
 		errorResponse := responses.ErrorResponse{
 			StatusCode: 500,
 			Error:      "Internal Server Error",

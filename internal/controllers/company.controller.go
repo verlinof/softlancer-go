@@ -9,8 +9,8 @@ import (
 	"github.com/verlinof/softlancer-go/internal/models"
 	"github.com/verlinof/softlancer-go/internal/requests"
 	"github.com/verlinof/softlancer-go/internal/responses"
-	"github.com/verlinof/softlancer-go/internal/utils"
 	"github.com/verlinof/softlancer-go/internal/validations"
+	"github.com/verlinof/softlancer-go/pkg"
 )
 
 type CompanyController struct{}
@@ -33,7 +33,7 @@ func (e *CompanyController) Index(c *gin.Context) {
 
 	// Update company logo URLs with the base API endpoint
 	for i := range companyRes {
-		logoPath := utils.PrefixBaseUrl(companyRes[i].CompanyLogo)
+		logoPath := pkg.PrefixBaseUrl(companyRes[i].CompanyLogo)
 		companyRes[i].CompanyLogo = *logoPath
 	}
 
@@ -73,7 +73,7 @@ func (e *CompanyController) Show(c *gin.Context) {
 	}
 
 	//Prefixing Base URL
-	logoPath := utils.PrefixBaseUrl(companyRes.CompanyLogo)
+	logoPath := pkg.PrefixBaseUrl(companyRes.CompanyLogo)
 	companyRes.CompanyLogo = *logoPath
 
 	successRes := responses.SuccessResponse{
@@ -109,7 +109,7 @@ func (e *CompanyController) Store(c *gin.Context) {
 	}
 
 	// Upload File
-	fileName, err := utils.HandleUploadFile(c, "companies", "company_logo", []string{"image/png", "image/jpeg", "image/jpg"}, 10000)
+	fileName, err := pkg.HandleUploadFile(c, "companies", "company_logo", []string{"image/png", "image/jpeg", "image/jpg"}, 10000)
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
@@ -128,7 +128,7 @@ func (e *CompanyController) Store(c *gin.Context) {
 	// Create Company
 	err = database.DB.Table("companies").Create(&company).Error
 	if err != nil {
-		utils.HandleRemoveFile(fileName)
+		pkg.HandleRemoveFile(fileName)
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
 			Error:      "Internal server error",
@@ -137,7 +137,7 @@ func (e *CompanyController) Store(c *gin.Context) {
 		return
 	}
 
-	company.CompanyLogo = *utils.PrefixBaseUrl(company.CompanyLogo)
+	company.CompanyLogo = *pkg.PrefixBaseUrl(company.CompanyLogo)
 
 	successRes := responses.SuccessResponse{
 		Message: "Success",
@@ -187,7 +187,7 @@ func (e *CompanyController) Update(c *gin.Context) {
 	}
 
 	// Upload File
-	fileName, err := utils.HandleUploadFile(c, "companies", "company_logo", []string{"image/png", "image/jpeg", "image/jpg"}, 10000)
+	fileName, err := pkg.HandleUploadFile(c, "companies", "company_logo", []string{"image/png", "image/jpeg", "image/jpg"}, 10000)
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
@@ -207,7 +207,7 @@ func (e *CompanyController) Update(c *gin.Context) {
 	// Update Company
 	err = database.DB.Table("companies").Where("id = ?", id).Updates(&company).Error
 	if err != nil {
-		utils.HandleRemoveFile(fileName)
+		pkg.HandleRemoveFile(fileName)
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
 			Error:      "Internal server error",
@@ -215,9 +215,9 @@ func (e *CompanyController) Update(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, errResponse)
 		return
 	}
-	defer utils.HandleRemoveFile(oldCompany.CompanyLogo)
+	defer pkg.HandleRemoveFile(oldCompany.CompanyLogo)
 
-	company.CompanyLogo = *utils.PrefixBaseUrl(company.CompanyLogo)
+	company.CompanyLogo = *pkg.PrefixBaseUrl(company.CompanyLogo)
 
 	successRes := responses.SuccessResponse{
 		Message: "Success",
@@ -253,7 +253,7 @@ func (e *CompanyController) Destroy(c *gin.Context) {
 
 	// Remove the file if it exists
 	if company.CompanyLogo != "" {
-		defer utils.HandleRemoveFile(company.CompanyLogo)
+		defer pkg.HandleRemoveFile(company.CompanyLogo)
 	}
 
 	// Delete the Company
