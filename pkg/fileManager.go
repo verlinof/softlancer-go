@@ -11,6 +11,21 @@ import (
 	"github.com/verlinof/softlancer-go/internal/validations"
 )
 
+// HandleUploadFile upload a file to static directory and return the path file
+// if file is not provided, it will return error
+// if file type is not allowed, it will return error
+// if file size exceeds limit, it will return error
+//
+// Parameters:
+// c *gin.Context - context of gin framework
+// folderName string - folder name where the file will be stored
+// form string - form name in the request
+// fileType []string - allowed file types
+// maxSize int - max size of the file in bytes
+//
+// Returns:
+// string - path of the uploaded file
+// error - error if something went wrong
 func HandleUploadFile(c *gin.Context, folderName string, form string, fileType []string, maxSize int) (string, error) {
 	fileHeader, _ := c.FormFile(form)
 
@@ -51,6 +66,13 @@ func HandleUploadFile(c *gin.Context, folderName string, form string, fileType [
 	return pathFile, nil
 }
 
+// HandleRemoveFile removes a file from static directory
+//
+// Parameters:
+// filename string - name of the file
+//
+// Returns:
+// error - error if something went wrong
 func HandleRemoveFile(filename string) error {
 	// filename := c.Param("filename")
 	errRemove := os.Remove(fmt.Sprintf(".%s", filename))
