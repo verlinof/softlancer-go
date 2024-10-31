@@ -71,11 +71,11 @@ func (e *ReferenceController) Store(c *gin.Context) {
 	}
 
 	//Validate
-	validationErr := validations.ValidateCreateReference(&request)
-	if len(validationErr) > 0 {
+	err = validations.ValidateCreateReference(&request)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
 			StatusCode: 400,
-			Error:      validationErr,
+			Error:      err.Error(),
 		})
 		return
 	}

@@ -1,12 +1,15 @@
 package validations
 
 import (
+	"errors"
+	"strings"
+
 	"github.com/verlinof/softlancer-go/internal/database"
 	"github.com/verlinof/softlancer-go/internal/models"
 	"github.com/verlinof/softlancer-go/internal/requests"
 )
 
-func ValidateCreateCompany(request *requests.CreateCompanyRequest) []string {
+func ValidateCreateCompany(request *requests.CreateCompanyRequest) error {
 	var validationErrors []string
 	var companyExisted *models.Company
 
@@ -28,10 +31,14 @@ func ValidateCreateCompany(request *requests.CreateCompanyRequest) []string {
 		validationErrors = append(validationErrors, "Company logo is required")
 	}
 
-	return validationErrors
+	if len(validationErrors) > 0 {
+		return errors.New(strings.Join(validationErrors, "; "))
+	}
+
+	return nil
 }
 
-func ValidateUpdateCompany(request *requests.CreateCompanyRequest) []string {
+func ValidateUpdateCompany(request *requests.CreateCompanyRequest) error {
 	var validationErrors []string
 	var companyExisted models.Company
 
@@ -53,5 +60,9 @@ func ValidateUpdateCompany(request *requests.CreateCompanyRequest) []string {
 		validationErrors = append(validationErrors, "Company logo is required")
 	}
 
-	return validationErrors
+	if len(validationErrors) > 0 {
+		return errors.New(strings.Join(validationErrors, "; "))
+	}
+
+	return nil
 }

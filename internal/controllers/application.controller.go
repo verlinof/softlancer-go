@@ -118,11 +118,11 @@ func (e *ApplicationController) Store(c *gin.Context) {
 	}
 
 	// Validasi input dari user
-	validationErr := validations.ValidateCreateApplication(&request)
-	if len(validationErr) > 0 {
+	err = validations.ValidateCreateApplication(&request)
+	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, responses.ErrorResponse{
 			StatusCode: 400,
-			Error:      validationErr,
+			Error:      err.Error(),
 		})
 		return
 	}

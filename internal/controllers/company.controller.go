@@ -98,11 +98,11 @@ func (e *CompanyController) Store(c *gin.Context) {
 	}
 
 	// Validations
-	validationErr := validations.ValidateCreateCompany(&companyReq)
-	if len(validationErr) > 0 {
+	err = validations.ValidateCreateCompany(&companyReq)
+	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 400,
-			Error:      validationErr,
+			Error:      err.Error(),
 		}
 		c.AbortWithStatusJSON(http.StatusBadRequest, errResponse)
 		return
@@ -176,11 +176,11 @@ func (e *CompanyController) Update(c *gin.Context) {
 	}
 
 	// Validations
-	validationErr := validations.ValidateUpdateCompany(&companyReq)
-	if len(validationErr) > 0 {
+	err = validations.ValidateUpdateCompany(&companyReq)
+	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 400,
-			Error:      validationErr,
+			Error:      err,
 		}
 		c.AbortWithStatusJSON(http.StatusBadRequest, errResponse)
 		return

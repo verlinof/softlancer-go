@@ -72,11 +72,11 @@ func (e *RoleController) Store(c *gin.Context) {
 		return
 	}
 
-	validationErr := validations.ValidateCreateRole(&request)
-	if len(validationErr) > 0 {
+	err = validations.ValidateCreateRole(&request)
+	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 400,
-			Error:      validationErr,
+			Error:      err.Error(),
 		}
 		c.JSON(http.StatusBadRequest, errResponse)
 		return
@@ -129,11 +129,11 @@ func (e *RoleController) Update(c *gin.Context) {
 		return
 	}
 
-	validationErr := validations.ValidateCreateRole(&request)
-	if len(validationErr) > 0 {
+	err = validations.ValidateCreateRole(&request)
+	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 400,
-			Error:      validationErr,
+			Error:      err.Error(),
 		}
 		c.JSON(http.StatusBadRequest, errResponse)
 		return

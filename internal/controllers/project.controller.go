@@ -118,11 +118,11 @@ func (e *ProjectController) Store(c *gin.Context) {
 	}
 
 	// Validasi input dari user
-	validationErr := validations.ValidateCreateProject(&projectReq)
-	if len(validationErr) > 0 {
+	err = validations.ValidateCreateProject(&projectReq)
+	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, responses.ErrorResponse{
 			StatusCode: 400,
-			Error:      validationErr,
+			Error:      err.Error(),
 		})
 		return
 	}
@@ -187,11 +187,11 @@ func (e *ProjectController) Update(c *gin.Context) {
 	}
 
 	// Validasi input dari user
-	validationErr := validations.ValidateUpdateProject(&projectReq)
-	if len(validationErr) > 0 {
+	err = validations.ValidateUpdateProject(&projectReq)
+	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, responses.ErrorResponse{
 			StatusCode: 400,
-			Error:      validationErr,
+			Error:      err,
 		})
 		return
 	}

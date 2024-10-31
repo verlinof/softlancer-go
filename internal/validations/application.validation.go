@@ -1,12 +1,15 @@
 package validations
 
 import (
+	"errors"
+	"strings"
+
 	"github.com/verlinof/softlancer-go/internal/database"
 	"github.com/verlinof/softlancer-go/internal/models"
 	"github.com/verlinof/softlancer-go/internal/requests"
 )
 
-func ValidateCreateApplication(request *requests.CreateApplicationRequest) []string {
+func ValidateCreateApplication(request *requests.CreateApplicationRequest) error {
 	var validationErrors []string
 
 	if request.ProjectId == "" {
@@ -23,10 +26,14 @@ func ValidateCreateApplication(request *requests.CreateApplicationRequest) []str
 		validationErrors = append(validationErrors, "Curiculum Vitae is required")
 	}
 
-	return validationErrors
+	if len(validationErrors) > 0 {
+		return errors.New(strings.Join(validationErrors, "; "))
+	}
+
+	return nil
 }
 
-func ValidateUpdateStatusApplication(request *requests.UpdateApplicationStatusRequest) []string {
+func ValidateUpdateStatusApplication(request *requests.UpdateApplicationStatusRequest) error {
 	var validationErrors []string
 	validStatus := map[string]bool{
 		"waiting":  true,
@@ -42,5 +49,9 @@ func ValidateUpdateStatusApplication(request *requests.UpdateApplicationStatusRe
 		}
 	}
 
-	return validationErrors
+	if len(validationErrors) > 0 {
+		return errors.New(strings.Join(validationErrors, "; "))
+	}
+
+	return nil
 }

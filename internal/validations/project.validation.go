@@ -1,13 +1,16 @@
 package validations
 
 import (
+	"errors"
+	"strings"
+
 	"github.com/verlinof/softlancer-go/internal/database"
 	"github.com/verlinof/softlancer-go/internal/models"
 	"github.com/verlinof/softlancer-go/internal/requests"
 )
 
 // Validation
-func ValidateCreateProject(request *requests.ProjectRequest) []string {
+func ValidateCreateProject(request *requests.ProjectRequest) error {
 	var validationErrors []string
 
 	if request.ProjectTitle == "" {
@@ -68,10 +71,14 @@ func ValidateCreateProject(request *requests.ProjectRequest) []string {
 		}
 	}
 
-	return validationErrors
+	if len(validationErrors) > 0 {
+		return errors.New(strings.Join(validationErrors, "; "))
+	}
+
+	return nil
 }
 
-func ValidateUpdateProject(request *requests.ProjectRequest) []string {
+func ValidateUpdateProject(request *requests.ProjectRequest) error {
 	var validationErrors []string
 	// =====Job Type=====
 	// Daftar nilai yang diizinkan untuk JobType
@@ -114,5 +121,9 @@ func ValidateUpdateProject(request *requests.ProjectRequest) []string {
 		}
 	}
 
-	return validationErrors
+	if len(validationErrors) > 0 {
+		return errors.New(strings.Join(validationErrors, "; "))
+	}
+
+	return nil
 }

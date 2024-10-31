@@ -2,6 +2,7 @@ package validations
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -16,18 +17,18 @@ func ValidateLogin(request *requests.LoginRequest) error {
 
 	// Validate email is not empty
 	if request.Email == "" {
-		validationErrors = append(validationErrors, "Email is required")
+		validationErrors = append(validationErrors, "email is required")
 	}
 
 	// Validate email format using regex
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	if request.Email != "" && !emailRegex.MatchString(request.Email) {
-		validationErrors = append(validationErrors, "Invalid email format")
+		validationErrors = append(validationErrors, "invalid email format")
 	}
 
 	// Validate password is not empty
 	if request.Password == "" {
-		validationErrors = append(validationErrors, "Password is required")
+		validationErrors = append(validationErrors, "password is required")
 	}
 
 	// If there are validation errors, return them as a single error
@@ -39,15 +40,14 @@ func ValidateLogin(request *requests.LoginRequest) error {
 	return nil
 }
 
-func ValidateRegister(request *requests.UserRequest) []string {
+func ValidateRegister(request *requests.UserRequest) error {
 	var validationErrors []string
 
 	//Check if the email already exist
 	userEmailExist := new(models.User)
 	database.DB.Table("users").Where("email = ?", request.Email).First(&userEmailExist)
 	if userEmailExist.ID != "" {
-		validationErrors = append(validationErrors, "Email already exist")
-		return validationErrors
+		return fmt.Errorf("email already exist")
 	}
 	if request.Email == "" {
 		validationErrors = append(validationErrors, "Email is required")
@@ -70,5 +70,9 @@ func ValidateRegister(request *requests.UserRequest) []string {
 		validationErrors = append(validationErrors, "Password is required")
 	}
 
-	return validationErrors
+	if len(validationErrors) > 0 {
+		return errors.New(strings.Join(validationErrors, ";"))
+	}
+
+	return nil
 }

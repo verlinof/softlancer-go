@@ -180,11 +180,11 @@ func (e *UserController) Register(c *gin.Context) {
 		return
 	}
 
-	validationErr := validations.ValidateRegister(userReq)
-	if len(validationErr) > 0 {
+	err = validations.ValidateRegister(userReq)
+	if err != nil {
 		errorResponse := responses.ErrorResponse{
 			StatusCode: 400,
-			Error:      validationErr,
+			Error:      err.Error(),
 		}
 
 		c.JSON(http.StatusBadRequest, errorResponse)

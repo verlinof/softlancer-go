@@ -1,12 +1,15 @@
 package validations
 
 import (
+	"errors"
+	"strings"
+
 	"github.com/verlinof/softlancer-go/internal/database"
 	"github.com/verlinof/softlancer-go/internal/models"
 	"github.com/verlinof/softlancer-go/internal/requests"
 )
 
-func ValidateCreateRole(request *requests.RoleRequest) []string {
+func ValidateCreateRole(request *requests.RoleRequest) error {
 	var validationErrors []string
 	var roleExisted *models.Role
 
@@ -20,5 +23,9 @@ func ValidateCreateRole(request *requests.RoleRequest) []string {
 		}
 	}
 
-	return validationErrors
+	if len(validationErrors) > 0 {
+		return errors.New(strings.Join(validationErrors, "; "))
+	}
+
+	return nil
 }

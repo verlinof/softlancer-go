@@ -11,8 +11,8 @@ import (
 	"github.com/verlinof/softlancer-go/internal/models"
 )
 
-// Struct untuk konfigurasi email
-type emailConfig struct {
+// emailService menggunakan emailConfig untuk konfigurasi
+type EmailService struct {
 	SMTPHost    string
 	SMTPPort    string
 	MailName    string
@@ -22,23 +22,16 @@ type emailConfig struct {
 	Auth        smtp.Auth
 }
 
-// emailService menggunakan emailConfig untuk konfigurasi
-type EmailService struct {
-	Config emailConfig
-}
-
 // Fungsi untuk membuat instance EmailService dengan konfigurasi yang diinisialisasi di awal
 func NewEmailService() *EmailService {
 	return &EmailService{
-		Config: emailConfig{
-			SMTPHost:    os.Getenv("MAIL_HOST"),
-			SMTPPort:    os.Getenv("MAIL_PORT"),
-			MailName:    os.Getenv("MAIL_FROM_NAME"),
-			SenderEmail: os.Getenv("MAIL_USERNAME"),
-			Password:    os.Getenv("MAIL_PASSWORD"),
-			NumWorkers:  3, // atau bisa ditetapkan secara dinamis
-			Auth:        smtp.PlainAuth("", os.Getenv("MAIL_USERNAME"), os.Getenv("MAIL_PASSWORD"), os.Getenv("MAIL_HOST")),
-		},
+		SMTPHost:    os.Getenv("MAIL_HOST"),
+		SMTPPort:    os.Getenv("MAIL_PORT"),
+		MailName:    os.Getenv("MAIL_FROM_NAME"),
+		SenderEmail: os.Getenv("MAIL_USERNAME"),
+		Password:    os.Getenv("MAIL_PASSWORD"),
+		NumWorkers:  3, // atau bisa ditetapkan secara dinamis
+		Auth:        smtp.PlainAuth("", os.Getenv("MAIL_USERNAME"), os.Getenv("MAIL_PASSWORD"), os.Getenv("MAIL_HOST")),
 	}
 }
 
@@ -88,7 +81,7 @@ Tim Softlancer
 
 	// Channel untuk menampung email job
 	jobs := make(chan models.EmailJob, len(emailList))
-	for i := 1; i <= e.Config.NumWorkers; i++ {
+	for i := 1; i <= e.NumWorkers; i++ {
 		wg.Add(1)
 		go e.emailWorker(i, jobs, &wg)
 	}
@@ -101,14 +94,14 @@ Tim Softlancer
 	// Tunggu semua emailWorker selesai
 	wg.Wait()
 
-	fmt.Println(e.Config.SMTPHost, e.Config.SMTPPort, e.Config.MailName, e.Config.SenderEmail, e.Config.Password, e.Config.NumWorkers, e.Config.Auth)
+	fmt.Println(e.SMTPHost, e.SMTPPort, e.MailName, e.SenderEmail, e.Password, e.NumWorkers, e.Auth)
 }
 
 // Fungsi untuk mengirim email
 func (e *EmailService) sendEmailJob(job models.EmailJob) {
 	// Membuat header email termasuk subject
 	headers := make(map[string]string)
-	headers["From"] = e.Config.MailName
+	headers["From"] = e.MailName
 	headers["To"] = job.To
 	headers["Subject"] = job.Subject
 
@@ -120,7 +113,7 @@ func (e *EmailService) sendEmailJob(job models.EmailJob) {
 	message += "\r\n" + job.Message
 
 	// Kirim email
-	err := smtp.SendMail(e.Config.SMTPHost+":"+e.Config.SMTPPort, e.Config.Auth, e.Config.SenderEmail, []string{job.To}, []byte(message))
+	err := smtp.SendMail(e.SMTPHost+":"+e.SMTPPort, e.Auth, e.SenderEmail, []string{job.To}, []byte(message))
 	if err != nil {
 		log.Printf("Failed to send email to %s: %v", job.To, err)
 		return

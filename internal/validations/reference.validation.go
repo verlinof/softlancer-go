@@ -1,12 +1,15 @@
 package validations
 
 import (
+	"errors"
+	"strings"
+
 	"github.com/verlinof/softlancer-go/internal/database"
 	"github.com/verlinof/softlancer-go/internal/models"
 	"github.com/verlinof/softlancer-go/internal/requests"
 )
 
-func ValidateCreateReference(request *requests.CreateReferenceRequest) []string {
+func ValidateCreateReference(request *requests.CreateReferenceRequest) error {
 	var validationErrors []string
 
 	if request.RoleID == "" {
@@ -18,5 +21,10 @@ func ValidateCreateReference(request *requests.CreateReferenceRequest) []string 
 			validationErrors = append(validationErrors, "Invalid project ID")
 		}
 	}
-	return validationErrors
+
+	if len(validationErrors) > 0 {
+		return errors.New(strings.Join(validationErrors, "; "))
+	}
+
+	return nil
 }
