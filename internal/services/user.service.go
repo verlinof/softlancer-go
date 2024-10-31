@@ -43,6 +43,23 @@ func (u *UserService) GetUserbyEmail(ctx context.Context, email string) (*models
 	return &user, nil
 }
 
+func (u *UserService) GetUserbyID(ctx context.Context, id string) (*models.User, error) {
+	var user models.User
+	query := `
+		SELECT *
+		FROM users
+		WHERE id = ?
+	`
+
+	err := database.DB.WithContext(ctx).Raw(query, id).Scan(&user).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (u *UserService) CreateUser(ctx context.Context, user *models.User) (*models.User, error) {
 	err := database.DB.WithContext(ctx).Create(&user).Error
 
@@ -51,15 +68,4 @@ func (u *UserService) CreateUser(ctx context.Context, user *models.User) (*model
 	}
 
 	return user, nil
-}
-
-func (u *UserService) GetUserbyID(ctx context.Context, id string) (*models.User, error) {
-	var user models.User
-	err := database.DB.WithContext(ctx).Where("id = ?", id).First(&user).Error
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
 }

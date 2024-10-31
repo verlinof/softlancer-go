@@ -11,35 +11,24 @@ import (
 	"github.com/verlinof/softlancer-go/internal/responses"
 	"github.com/verlinof/softlancer-go/internal/services"
 	"github.com/verlinof/softlancer-go/internal/validations"
+	"github.com/verlinof/softlancer-go/pkg"
 )
 
 type ProjectController struct {
-	emailService *services.EmailService
+	emailService   *services.EmailService
+	projectService *services.ProjectService
 }
 
-func (e *ProjectController) Init() {
-	if e.emailService == nil {
-		e.emailService = services.NewEmailService()
+func NewProjectController() *ProjectController {
+	return &ProjectController{
+		emailService:   services.NewEmailService(),
+		projectService: services.NewProjectService(),
 	}
 }
 
 func (e *ProjectController) IndexAdmin(c *gin.Context) {
-	var response []map[string]interface{}
-	err := database.DB.Table("projects").
-		Select(`
-			projects.id, 
-			projects.project_title, 
-			projects.project_description, 
-			projects.job_type, 
-			projects.status,
-			roles.role_name,
-			companies.company_name, 
-			companies.company_description, 
-			companies.company_logo
-		`).
-		Joins("JOIN companies ON projects.company_id = companies.id").
-		Joins("JOIN roles ON projects.role_id = roles.id").
-		Scan(&response).Error
+	var projects []models.ProjectDetail
+	projects, err := e.projectService.GetAllProjects(c.Request.Context())
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
@@ -49,37 +38,22 @@ func (e *ProjectController) IndexAdmin(c *gin.Context) {
 		return
 	}
 
-	message := "Success"
-	if len(response) == 0 {
-		message = "Projects data is empty"
+	for i := range projects {
+		logoPath := *pkg.PrefixBaseUrl(projects[i].CompanyLogo)
+		projects[i].CompanyLogo = logoPath
 	}
 
 	successRes := responses.SuccessResponse{
-		Message: message,
-		Data:    response,
+		Message: "Success",
+		Data:    projects,
 	}
 
 	c.JSON(http.StatusOK, successRes)
 }
 
 func (e *ProjectController) Index(c *gin.Context) {
-	var response []map[string]interface{}
-	err := database.DB.Table("projects").
-		Select(`
-		projects.id, 
-		projects.project_title, 
-		projects.project_description, 
-		projects.job_type, 
-		projects.status,
-		roles.role_name,
-		companies.company_name, 
-		companies.company_description, 
-		companies.company_logo
-	`).
-		Joins("JOIN companies ON projects.company_id = companies.id").
-		Joins("JOIN roles ON projects.role_id = roles.id").
-		Where("projects.status = ?", "open").
-		Scan(&response).Error
+	var projects []models.ProjectDetail
+	projects, err := e.projectService.GetOpenProjects(c.Request.Context())
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
@@ -89,14 +63,14 @@ func (e *ProjectController) Index(c *gin.Context) {
 		return
 	}
 
-	message := "Success"
-	if len(response) == 0 {
-		message = "Projects data is empty"
+	for i := range projects {
+		logoPath := *pkg.PrefixBaseUrl(projects[i].CompanyLogo)
+		projects[i].CompanyLogo = logoPath
 	}
 
 	successRes := responses.SuccessResponse{
-		Message: message,
-		Data:    response,
+		Message: "Success",
+		Data:    projects,
 	}
 
 	c.JSON(http.StatusOK, successRes)
@@ -104,38 +78,25 @@ func (e *ProjectController) Index(c *gin.Context) {
 
 func (e *ProjectController) Show(c *gin.Context) {
 	var err error
-	var response []map[string]interface{}
+	var project *models.ProjectDetail
 
 	id := c.Param("id")
-	err = database.DB.Table("projects").
-		Select(`
-			projects.id, 
-			projects.project_title, 
-			projects.project_description, 
-			projects.job_type, 
-			projects.status,
-			roles.role_name,
-			companies.company_name, 
-			companies.company_description, 
-			companies.company_logo
-	`).
-		Joins("JOIN companies ON projects.company_id = companies.id").
-		Joins("JOIN roles ON projects.role_id = roles.id").
-		Where("projects.id = ?", id).
-		First(&response).Error
-
-	if err != nil && strings.Contains(err.Error(), "record not found") {
+	project, err = e.projectService.GetProjectByID(c.Request.Context(), id)
+	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 404,
-			Error:      "Project not found",
+			Error:      err.Error(),
 		}
 		c.JSON(http.StatusInternalServerError, errResponse)
 		return
 	}
 
+	//Prefix the image url
+	project.CompanyLogo = *pkg.PrefixBaseUrl(project.CompanyLogo)
+
 	successRes := responses.SuccessResponse{
 		Message: "Success",
-		Data:    response, // Mengambil hasil pertama dari slice sebagai response
+		Data:    project, // Mengambil hasil pertama dari slice sebagai response
 	}
 
 	c.JSON(http.StatusOK, successRes)
@@ -177,7 +138,8 @@ func (e *ProjectController) Store(c *gin.Context) {
 	}
 
 	// Simpan project ke database
-	if err = database.DB.Create(&project).Error; err != nil {
+	err = e.projectService.CreateProject(c.Request.Context(), &project)
+	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
 			Error:      err.Error(),
@@ -195,6 +157,8 @@ func (e *ProjectController) Store(c *gin.Context) {
 		Data: responses.ProjectResponse{
 			ID:                 project.ID,
 			ProjectTitle:       project.ProjectTitle,
+			CompanyID:          project.CompanyID,
+			RoleID:             project.RoleID,
 			ProjectDescription: project.ProjectDescription,
 			JobType:            project.JobType,
 			Status:             project.Status,
@@ -208,20 +172,9 @@ func (e *ProjectController) Update(c *gin.Context) {
 	var err error
 	var projectReq requests.ProjectRequest
 	var project models.Project
-	var oldProject models.Project
+	// var oldProject models.Project
 
 	id := c.Param("id")
-
-	//Find the old data
-	err = database.DB.Table("projects").Where("id = ?", id).First(&oldProject).Error
-	if err != nil {
-		errResponse := responses.ErrorResponse{
-			StatusCode: 404,
-			Error:      "Project not found",
-		}
-		c.JSON(http.StatusNotFound, errResponse)
-		return
-	}
 
 	// Bind request body ke struct ProjectRequest
 	if err = c.ShouldBind(&projectReq); err != nil {
@@ -244,7 +197,8 @@ func (e *ProjectController) Update(c *gin.Context) {
 	}
 
 	// Simpan project ke database
-	if err = database.DB.Table("projects").Where("id = ?", id).Updates(&projectReq).Error; err != nil {
+	err = e.projectService.UpdateProject(c.Request.Context(), id, &projectReq)
+	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
 			Error:      err.Error(),
@@ -253,8 +207,17 @@ func (e *ProjectController) Update(c *gin.Context) {
 		return
 	}
 
-	// Mencari data yang telah diupdate
-	database.DB.Table("projects").Where("id = ?", id).First(&project)
+	//Cari project berdasarkan ID
+	err = database.DB.Table("projects").Where("id = ?", id).First(&project).Error
+
+	if err != nil && strings.Contains(err.Error(), "record not found") {
+		errResponse := responses.ErrorResponse{
+			StatusCode: 404,
+			Error:      "record not found",
+		}
+		c.JSON(http.StatusBadRequest, errResponse)
+		return
+	}
 
 	// Mengembalikan response sukses
 	successRes := responses.SuccessResponse{
@@ -262,6 +225,8 @@ func (e *ProjectController) Update(c *gin.Context) {
 		Data: responses.ProjectResponse{
 			ID:                 project.ID,
 			ProjectTitle:       project.ProjectTitle,
+			CompanyID:          project.CompanyID,
+			RoleID:             project.RoleID,
 			ProjectDescription: project.ProjectDescription,
 			JobType:            project.JobType,
 			Status:             project.Status,
@@ -273,7 +238,6 @@ func (e *ProjectController) Update(c *gin.Context) {
 
 func (e *ProjectController) Destroy(c *gin.Context) {
 	var err error
-	var project models.Project
 	var projectRes responses.ProjectResponse
 
 	id := c.Param("id")
@@ -293,7 +257,7 @@ func (e *ProjectController) Destroy(c *gin.Context) {
 	}
 
 	//Delete the project
-	err = database.DB.Where("id = ?", id).Delete(&project).Error
+	err = e.projectService.DeleteProject(c.Request.Context(), id)
 
 	if err != nil {
 		errResponse := responses.ErrorResponse{

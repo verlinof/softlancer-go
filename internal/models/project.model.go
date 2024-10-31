@@ -20,6 +20,18 @@ type Project struct {
 	CreatedAt          time.Time
 }
 
+type ProjectDetail struct {
+	ID                 string `json:"id"`
+	ProjectTitle       string `json:"project_title"`
+	ProjectDescription string `json:"project_description"`
+	JobType            string `json:"job_type"`
+	Status             string `json:"status"`
+	RoleName           string `json:"role_name"`
+	CompanyName        string `json:"company_name"`
+	CompanyDescription string `json:"company_description"`
+	CompanyLogo        string `json:"company_logo"`
+}
+
 func (p *Project) BeforeCreate(tx *gorm.DB) (err error) {
 	p.ID = uuid.New().String()
 	return

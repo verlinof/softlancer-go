@@ -16,12 +16,12 @@ import (
 )
 
 type UserController struct {
-	UserService *services.UserService
+	userService *services.UserService
 }
 
 func NewUserController() *UserController {
 	return &UserController{
-		UserService: services.NewUserService(),
+		userService: services.NewUserService(),
 	}
 }
 
@@ -38,7 +38,7 @@ func NewUserController() *UserController {
 // @Router /users [get]
 func (e *UserController) Index(c *gin.Context) {
 	var userRes []responses.UserResponse
-	users, err := e.UserService.GetUsers(c.Request.Context())
+	users, err := e.userService.GetUsers(c.Request.Context())
 	if err != nil {
 		errResponse := responses.ErrorResponse{
 			StatusCode: 500,
@@ -100,7 +100,7 @@ func (e *UserController) Login(c *gin.Context) {
 	}
 
 	// Find requested User
-	user, err := e.UserService.GetUserbyEmail(c.Request.Context(), userReq.Email)
+	user, err := e.userService.GetUserbyEmail(c.Request.Context(), userReq.Email)
 	if user.ID == "" {
 		errResponse = responses.ErrorResponse{
 			StatusCode: 400,
@@ -203,7 +203,7 @@ func (e *UserController) Register(c *gin.Context) {
 		Password: hashedPasswordStr,
 	}
 
-	user, err = e.UserService.CreateUser(c.Request.Context(), user)
+	user, err = e.userService.CreateUser(c.Request.Context(), user)
 	if err != nil {
 		errorResponse := responses.ErrorResponse{
 			StatusCode: 500,
@@ -238,7 +238,7 @@ func (e *UserController) Profile(c *gin.Context) {
 		return
 	}
 
-	user, err := e.UserService.GetUserbyID(c.Request.Context(), userId.(string))
+	user, err := e.userService.GetUserbyID(c.Request.Context(), userId.(string))
 	if err != nil {
 		errorResponse := responses.ErrorResponse{
 			StatusCode: 500,
