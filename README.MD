@@ -34,6 +34,11 @@ The project structure follows a pattern inspired by Laravel to keep the applicat
 
 ## Setup and Installation
 
+- **Install the Dependencies**
+```bash
+go mod tidy && go mod download
+```
+
 1. **Clone the repository**
 
 ```bash
