@@ -1,0 +1,57 @@
+version: "3"
+
+services:
+  nginx:
+    image: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - golang
+    networks:
+      - network1
+
+  mysql:
+    image: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: "softlancer"
+      MYSQL_ROOT_PASSWORD: "password"
+      MYSQL_ROOT_HOST: "%"
+    volumes:
+      - ./mysql:/var/lib/mysql
+    networks:
+      - network1
+
+  golang:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /app
+    volumes:
+      - ./:/app
+    depends_on:
+      - mysql
+    networks:
+      - network1
+    entrypoint: ["sh", "./entrypoint.sh"]
+
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - "8082:80"
+    environment:
+      PMA_HOST: mysql
+    networks:
+      - network1
+
+networks:
+  network1:
+    driver: bridge
+# Perintah menjalankan
+# docker compose -f docker-compose.yml up -d
+
+# Perintah untuk menghentikan
+# docker compose -f docker-compose.yml down
